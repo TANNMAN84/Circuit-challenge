@@ -1,4 +1,7 @@
 import { ConfidenceTier, ScenarioId } from '../types/circuit';
+import forensicBg from '../assets/images/bg_forensic_bench_1795417780790.jpg';
+import rovBg from '../assets/images/bg_deepsea_rov_1795417780221.jpg';
+import outbackBg from '../assets/images/bg_outback_station_1795417780956.jpg';
 
 export interface ScenarioMetadata {
   id: ScenarioId;
@@ -30,7 +33,7 @@ export const SCENARIOS: Record<ScenarioId, ScenarioMetadata> = {
     successVerb: 'Disarmed',
     successHeadline: 'BOX DISARMED!',
     accentLabel: 'Workbench Mission',
-    backgroundImage: '/src/assets/images/bg_forensic_bench_1795417780790.jpg',
+    backgroundImage: forensicBg,
     fallbackGradient: 'from-stone-900 via-zinc-900 to-amber-950',
     stripeClass: 'hazard-stripe-bar',
     chassisFrameBorder: '#f59e0b',
@@ -49,7 +52,7 @@ export const SCENARIOS: Record<ScenarioId, ScenarioMetadata> = {
     successVerb: 'Fixed',
     successHeadline: 'SUB SAFE & READY!',
     accentLabel: 'Deep-Sea Mission',
-    backgroundImage: '/src/assets/images/bg_deepsea_rov_1795417780221.jpg',
+    backgroundImage: rovBg,
     fallbackGradient: 'from-slate-950 via-cyan-950 to-teal-950',
     stripeClass: 'rov-stripe-bar',
     chassisFrameBorder: '#06b6d4',
@@ -68,7 +71,7 @@ export const SCENARIOS: Record<ScenarioId, ScenarioMetadata> = {
     successVerb: 'Fixed',
     successHeadline: 'STATION SAFE!',
     accentLabel: 'Outback Storm Mission',
-    backgroundImage: '/src/assets/images/bg_outback_station_1795417780956.jpg',
+    backgroundImage: outbackBg,
     fallbackGradient: 'from-stone-950 via-orange-950 to-amber-950',
     stripeClass: 'outback-stripe-bar',
     chassisFrameBorder: '#ea580c',
