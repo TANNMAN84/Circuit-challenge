@@ -1,0 +1,190 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    text-wrap: balance;
+  }
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Hazard diagonal caution stripe trim for tactical hardware framing */
+.hazard-stripe-bar {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    #f59e0b,
+    #f59e0b 10px,
+    #18181b 10px,
+    #18181b 20px
+  );
+}
+
+.rov-stripe-bar {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    #06b6d4,
+    #06b6d4 10px,
+    #0f172a 10px,
+    #0f172a 20px
+  );
+}
+
+.outback-stripe-bar {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    #ea580c,
+    #ea580c 10px,
+    #292524 10px,
+    #292524 20px
+  );
+}
+
+/* Fan rotation keyframes scaled via inline animation-duration */
+@keyframes spin-fan {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.fan-spinning {
+  animation-name: spin-fan;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes siren-pulse {
+  0%, 100% {
+    opacity: 0.95;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(1.08);
+  }
+}
+
+.siren-active {
+  animation: siren-pulse 0.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* Dramatic physical chassis shake on fault lockout */
+@keyframes chassis-shake {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  15% {
+    transform: translate3d(-6px, 2px, 0);
+  }
+  30% {
+    transform: translate3d(6px, -2px, 0);
+  }
+  45% {
+    transform: translate3d(-5px, -1px, 0);
+  }
+  60% {
+    transform: translate3d(4px, 2px, 0);
+  }
+  75% {
+    transform: translate3d(-2px, 0, 0);
+  }
+}
+
+.animate-chassis-shake {
+  animation: chassis-shake 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* Victory stamp pop */
+@keyframes stamp-pop {
+  0% {
+    opacity: 0;
+    transform: scale(1.25) rotate(-4deg);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(0.97) rotate(-1deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.animate-stamp-pop {
+  animation: stamp-pop 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fan-spinning,
+  .siren-active,
+  .animate-chassis-shake,
+  .animate-stamp-pop {
+    animation: none !important;
+  }
+}
+
+/* Strict A4 Monochrome Classroom Worksheet Printing */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 9mm 10mm;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .print-student-page {
+    width: 100%;
+    max-height: 277mm;
+    overflow: hidden;
+    page-break-after: auto;
+    break-after: auto;
+  }
+
+  .print-avoid-break {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .print-teacher-key-page {
+    break-before: page;
+    page-break-before: always;
+    width: 100%;
+  }
+}

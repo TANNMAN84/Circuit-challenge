@@ -1,0 +1,6 @@
+{
+  "name": "Circuit Disarm",
+  "description": "Interactive NSW Stage 5 Science (PW3 & PW4) electrical circuit disarming game featuring tactile physical hardware bays, printable IEC/Australian schematics, a deterministic Modified Nodal Analysis solver, and PIN-protected Teacher Mode.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
