@@ -5,8 +5,8 @@ An interactive, 100% client-side educational circuit puzzle game designed for Ye
 ## Features
 - **10 Progressive Circuit Missions** covering series & parallel switches, short-circuit protection, Ohm's Law (`V = I × R`), fuses, energy efficiency, and one-way diodes.
 - **3 Selectable Mission Worlds**: *Locked Evidence Case*, *Deep-Sea Sub Rescue*, and *Outback Solar Station*.
-- **Docked 1-Tap Pocket Meter** (Missions 06–10) with safe parallel Voltmeter (`TP` pins) and inline Ammeter (`A` clips).
-- **2-Sided "Flip Box" Panels** for multi-part circuits (Missions 05, 06, 08 & 10).
+- **Hybrid Hardware Panels**: Visual **Wired Bays** for introductory circuits (Missions 01–04, 07) and clean industrial **Switchboards** with unlockable bolted sub-panels for complex multi-branch circuits (Missions 05, 06, 08–10).
+- **Highlighted Inline Check Zones** (Missions 06–10) for 1-tap live Voltage (`V`) and Current (`A`) readings directly on the panel.
 - **Confidence Countdown Timer** (*No Timer*, *Learner*, *Standard*, *Extreme*) with retro red 7-segment display.
 - **Print-Ready A4 Circuit Map Sheets** (Page 1 student sheet + optional Page 2 Teacher Answer Key when Teacher Mode is unlocked; default Teacher PIN: `2026`).
 

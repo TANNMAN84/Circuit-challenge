@@ -11,17 +11,14 @@ export const LEVELS: LevelDefinition[] = [
     title: 'Complete Loops & Switches',
     syllabusCodes: ['PW3a'],
     multimeterEnabled: false,
+    panelStyle: 'wired',
     standardSeconds: 120,
     briefings: {
-      forensic:
-        'The Warning Siren is going off and the Green Safe Light is OFF. Follow your circuit map to turn ON the Green Safe Light and turn OFF the Warning Siren.',
-      rov:
-        'The sub alarm is ringing and the Green Safe Light is OFF. Use your circuit map to turn ON the Green Safe Light and turn OFF the Alarm.',
-      outback:
-        'The storm siren is loud and the Green Safe Light is OFF. Follow your circuit map to turn ON the Green Safe Light and turn OFF the Siren.',
+      forensic: 'Use your Circuit Map to turn ON the Green Safe Light and turn OFF the Warning Siren.',
+      rov: 'Use your Circuit Map to turn ON the Green Safe Light and turn OFF the Sub Alarm.',
+      outback: 'Use your Circuit Map to turn ON the Green Safe Light and turn OFF the Storm Siren.',
     },
-    debriefNote:
-      'Awesome job! Electricity only flows when the switches make a full unbroken loop from + to −.',
+    debriefNote: 'Electricity only flows when switches make one unbroken loop from + to −.',
     nodes: [
       { id: 'bat_pos', schematic: { x: 90, y: 180 } },
       { id: 'bat_neg', schematic: { x: 90, y: 260 }, isGround: true },
@@ -237,17 +234,14 @@ export const LEVELS: LevelDefinition[] = [
     title: 'Side-by-Side (Parallel) Paths',
     syllabusCodes: ['PW3a', 'PW3c'],
     multimeterEnabled: false,
+    panelStyle: 'wired',
     standardSeconds: 150,
     briefings: {
-      forensic:
-        'Three parts each have their own separate path from the 12 V battery. Turn ON the Cooling Fan and Green Safe Light, and turn OFF the Warning Light. Unlock Hatch 1 to reach the hidden switch.',
-      rov:
-        'Three sub parts share the 12 V battery on separate paths. Turn ON the Cooling Fan and Green Safe Light, and turn OFF the Warning Light. Open Hatch 1 to reach the locked switch.',
-      outback:
-        'Three solar box parts run off the 12 V battery on separate paths. Turn ON the Cooling Fan and Green Safe Light, and turn OFF the Warning Light. Unlock Hatch 1 first.',
+      forensic: 'Unlock Hatch 1, turn ON the Fan and Green Light, and turn OFF the Warning Light.',
+      rov: 'Unlock Hatch 1, turn ON the Fan and Green Light, and turn OFF the Warning Light.',
+      outback: 'Unlock Hatch 1, turn ON the Fan and Green Light, and turn OFF the Warning Light.',
     },
-    debriefNote:
-      'Great work! In a parallel circuit, each part has its own path to the battery — so turning one OFF leaves the others running!',
+    debriefNote: 'Parallel paths work independently — turning one OFF leaves the others running.',
     nodes: [
       { id: 'bat_pos', schematic: { x: 80, y: 180 } },
       { id: 'bat_neg', schematic: { x: 80, y: 260 }, isGround: true },
@@ -544,17 +538,14 @@ export const LEVELS: LevelDefinition[] = [
     title: 'Dodge the Short-Circuit Trap',
     syllabusCodes: ['PW3a', 'PW3c'],
     multimeterEnabled: false,
+    panelStyle: 'wired',
     standardSeconds: 180,
     briefings: {
-      forensic:
-        'Watch out! One switch connects the + and − sides of the battery straight together with nothing in between. Turn ON Lights A & B and turn OFF the Danger Relay — without causing a short circuit!',
-      rov:
-        'Watch out! One trap switch connects + straight to − on the sub battery. Turn ON Lights A & B and turn OFF the Release Relay — without causing a short circuit!',
-      outback:
-        'Watch out! One trap switch connects the battery + straight to −. Turn ON Lights A & B and turn OFF the Surge Relay — without causing a short circuit!',
+      forensic: 'One switch is a short-circuit trap! Turn ON Lights A & B and turn OFF the Danger Relay.',
+      rov: 'One switch is a short-circuit trap! Turn ON Lights A & B and turn OFF the Release Relay.',
+      outback: 'One switch is a short-circuit trap! Turn ON Lights A & B and turn OFF the Surge Relay.',
     },
-    debriefNote:
-      'Trap dodged! Connecting + straight to − with no light or resistor creates a short circuit and trips the breaker.',
+    debriefNote: 'Connecting + straight to − with no load creates a short circuit and trips the breaker.',
     nodes: [
       { id: 'bat_pos', schematic: { x: 75, y: 180 } },
       { id: 'bat_neg', schematic: { x: 75, y: 260 }, isGround: true },
@@ -886,17 +877,14 @@ export const LEVELS: LevelDefinition[] = [
     title: 'Shared Main Switches',
     syllabusCodes: ['PW3a'],
     multimeterEnabled: false,
+    panelStyle: 'wired',
     standardSeconds: 180,
     briefings: {
-      forensic:
-        'Two shared switches send power to pairs of parts at once. Turn ON the Pump and Green Safe Light, and keep the Alarm Horn and Igniter OFF — turn OFF the unsafe switches first!',
-      rov:
-        'Two shared switches feed pairs of sub parts. Turn ON the Pump and Green Safe Light, and keep the Horn and Flare OFF — flip the unsafe side switches OFF first!',
-      outback:
-        'Two shared switches feed pairs of station parts. Turn ON the Pump and Green Safe Light, and keep the Horn and Igniter OFF — flip the unsafe switches OFF first!',
+      forensic: 'Shared switches feed pairs of parts. Turn OFF the unsafe switches first, then power the Pump and Green Light.',
+      rov: 'Shared switches feed pairs of parts. Turn OFF the unsafe switches first, then power the Pump and Green Light.',
+      outback: 'Shared switches feed pairs of parts. Turn OFF the unsafe switches first, then power the Pump and Green Light.',
     },
-    debriefNote:
-      'Smart thinking! When one shared switch feeds two parts, turn OFF the dangerous side switch before turning ON the shared switch.',
+    debriefNote: 'When a shared switch feeds two parts, cut the unsafe branch before switching it ON.',
     nodes: [
       { id: 'bat_pos', schematic: { x: 70, y: 180 } },
       { id: 'bat_neg', schematic: { x: 70, y: 260 }, isGround: true },
@@ -1295,37 +1283,16 @@ export const LEVELS: LevelDefinition[] = [
     title: 'Stuck Switch & Siren Trap',
     syllabusCodes: ['PW3a', 'PW3c'],
     multimeterEnabled: false,
+    panelStyle: 'switchboard',
     standardSeconds: 210,
     antiTamperWarning:
-      'WATCH OUT: If the Siren (BZ1) gets power even for a split second, the box locks out! Turn OFF its own switch BEFORE turning ON the shared switch.',
-    hardwarePanels: [
-      {
-        id: 'front',
-        label: 'Front Panel',
-        subtitle: 'S1–S4 · Alarm & Stuck Switch',
-        switchIds: ['S1', 'S2', 'S3', 'S4'],
-        componentIds: ['V1', 'LED1', 'RELAY1', 'SIREN1'],
-        hatchIds: [],
-      },
-      {
-        id: 'back',
-        label: 'Back Panel',
-        subtitle: 'S5–S8 · Safe Light, Fan & Hatch',
-        switchIds: ['S5', 'S6', 'S7', 'S8'],
-        componentIds: ['LED2', 'FAN1'],
-        hatchIds: ['H1'],
-      },
-    ],
+      'TRAP WARNING: If the Siren (BZ1) gets power even briefly, the box locks out! Cut its switch BEFORE turning ON the shared switch.',
     briefings: {
-      forensic:
-        'Switch S1 is stuck ON! Turn OFF the Danger Coil, unlock Hatch 1 on the Back Panel, and turn ON Green Light 1, Green Light 2, and the Vent Fan — without EVER letting the Siren turn on!',
-      rov:
-        'Main Switch S1 is rusted stuck ON! Turn OFF the Release Coil, open Hatch 1 on the Back Panel, and turn ON both Green Lights and the Vent Fan — without letting the Siren go off!',
-      outback:
-        'Switch S1 is melted stuck ON! Turn OFF the Surge Coil, unlock Hatch 1 on the Back Panel, and turn ON both Green Lights and the Vent Fan — without tripping the Siren!',
+      forensic: 'S1 is stuck ON. Use your Circuit Map to cut the Danger Coil, unlock Hatch 1, and power both Green Lights + Fan without tripping the Siren.',
+      rov: 'S1 is stuck ON. Use your Circuit Map to cut the Release Coil, unlock Hatch 1, and power both Green Lights + Fan without tripping the Siren.',
+      outback: 'S1 is stuck ON. Use your Circuit Map to cut the Surge Coil, unlock Hatch 1, and power both Green Lights + Fan without tripping the Siren.',
     },
-    debriefNote:
-      'Cool nerves! Turning OFF the Siren switch (S5) before flipping the shared switch (S4) beat the alarm trap — and you worked right around stuck switch S1!',
+    debriefNote: 'Cutting S5 before flipping shared switch S4 beat the siren trap and worked around stuck S1.',
     nodes: [
       { id: 'bat_pos', schematic: { x: 65, y: 185 } },
       { id: 'bat_neg', schematic: { x: 65, y: 265 }, isGround: true },
@@ -1813,41 +1780,24 @@ export const LEVELS: LevelDefinition[] = [
   {
     id: 6,
     phase: 2,
-    phaseTitle: 'Stage 2 · Using the Pocket Meter',
-    title: 'Sharing Voltage (Meet the Meter!)',
+    phaseTitle: 'Stage 2 · Checking Volts & Amps',
+    title: 'Sharing Voltage',
     syllabusCodes: ['PW3c'],
     multimeterEnabled: true,
-    standardSeconds: 240,
-    hardwarePanels: [
-      {
-        id: 'front',
-        label: 'Front Panel',
-        subtitle: 'Battery, Resistors & Yellow Volt Pins',
-        switchIds: ['S1'],
-        componentIds: ['V1', 'R1', 'R2', 'LED2'],
-        hatchIds: [],
-        testPointNodeIds: ['tp1', 'tp2', 'tp3'],
-        shuntComponentIds: ['R1'],
-      },
-      {
-        id: 'back',
-        label: 'Back Panel',
-        subtitle: 'S2–S5 · Sensors, Warning Lamp & Hatch',
-        switchIds: ['S2', 'S3', 'S4', 'S5'],
-        componentIds: ['LED1', 'LAMP1', 'LAMP2'],
-        hatchIds: ['H1'],
-      },
+    panelStyle: 'switchboard',
+    checkZones: [
+      { id: 'v_r1', kind: 'V', label: 'TP1–TP2', sublabel: 'Across R1 (10 Ω)', nodeA: 'tp1', nodeB: 'tp2', highlight: true },
+      { id: 'v_r2', kind: 'V', label: 'TP2–TP3', sublabel: 'Across R2 (20 Ω)', nodeA: 'tp2', nodeB: 'tp3', highlight: true },
+      { id: 'v_bat', kind: 'V', label: 'TP1–TP3', sublabel: 'Battery Total', nodeA: 'tp1', nodeB: 'tp3' },
+      { id: 'a_main', kind: 'A', label: 'A1', sublabel: 'Main Loop', componentId: 'R1' },
     ],
+    standardSeconds: 240,
     briefings: {
-      forensic:
-        'You unlocked the Pocket Meter below! The 9 V battery is shared between two resistors (10 Ω and 20 Ω). Use VOLTS (V) on pins TP1, TP2, and TP3 to spot which sensor gets over 5 V, turn it OFF, and turn ON the safe 3 V sensor.',
-      rov:
-        'Use the Pocket Meter in VOLTS (V) mode on yellow pins TP1, TP2, and TP3 to test the two resistors (10 Ω and 20 Ω). Turn OFF the sensor getting over 5 V, unlock Hatch 1, and turn ON the safe 3 V sensor.',
-      outback:
-        'Check yellow pins TP1, TP2, and TP3 with the Pocket Meter in VOLTS (V) mode. Turn OFF the sensor getting more than 5 V, unlock Hatch 1, and switch ON the safe 3 V sensor.',
+      forensic: 'Check the highlighted Volts zones (TP1–TP2 & TP2–TP3). Turn OFF the sensor over 5 V, unlock Hatch 1, and turn ON the safe 3 V sensor.',
+      rov: 'Check the highlighted Volts zones (TP1–TP2 & TP2–TP3). Turn OFF the sensor over 5 V, unlock Hatch 1, and turn ON the safe 3 V sensor.',
+      outback: 'Check the highlighted Volts zones (TP1–TP2 & TP2–TP3). Turn OFF the sensor over 5 V, unlock Hatch 1, and turn ON the safe 3 V sensor.',
     },
-    debriefNote:
-      'Awesome measuring! Resistors in one line share the 9 V battery — 3 V across 10 Ω and 6 V across 20 Ω (3 + 6 = 9 V).',
+    debriefNote: 'Resistors in series share the 9 V battery: 3 V across 10 Ω + 6 V across 20 Ω = 9 V.',
     nodes: [
       { id: 'bat_pos', schematic: { x: 75, y: 185 } },
       { id: 'bat_neg', schematic: { x: 75, y: 265 }, isGround: true },
@@ -2248,10 +2198,10 @@ export const LEVELS: LevelDefinition[] = [
           {
             stageNumber: 1,
             code: '006',
-            title: 'Measure the Voltage Across R2',
+            title: 'Voltage Across R2',
             prompt:
-              'Use the Pocket Meter in VOLTS (V) mode and test between yellow pins TP2 and TP3 (across the 20 Ω resistor R2). How many Volts do you read? Enter 3 digits (like 006).',
-            formulaHint: 'Tip: Click the TP2 ↔ TP3 button on the Pocket Meter below!',
+              'Tap Check V: TP2–TP3 on the switchboard to measure Volts across R2 (20 Ω). Enter the Volts as 3 digits (like 006).',
+            formulaHint: 'Tap the highlighted TP2–TP3 check button!',
             syllabusNote: 'NSW Stage 5 PW3c — Voltage division in series circuits',
           },
         ],
@@ -2290,21 +2240,22 @@ export const LEVELS: LevelDefinition[] = [
   {
     id: 7,
     phase: 2,
-    phaseTitle: 'Stage 2 · Using the Pocket Meter',
+    phaseTitle: 'Stage 2 · Checking Volts & Amps',
     title: 'Dial the Safe Current (V = I × R)',
     syllabusCodes: ['PW3b', 'PW3c'],
     multimeterEnabled: true,
+    panelStyle: 'wired',
+    checkZones: [
+      { id: 'v_bat', kind: 'V', label: 'TP1–TP2', sublabel: 'Battery Volts', nodeA: 'tp1', nodeB: 'tp2', highlight: true },
+      { id: 'a_coil', kind: 'A', label: 'A1', sublabel: 'Safe Coil Amps', componentId: 'RELAY1', highlight: true },
+    ],
     standardSeconds: 270,
     briefings: {
-      forensic:
-        'Check the battery Volts between TP1 and TP2 to unlock Hatch 1. Then use R = V ÷ I to set Resistance Dial VR1 so the Safe Coil gets 0.35 A–0.45 A. Careful: more than 0.50 A burns it out!',
-      rov:
-        'Measure the battery Volts between TP1 and TP2 to open Hatch 1. Turn Resistance Dial VR1 using R = V ÷ I so the Trim Coil gets 0.35 A–0.45 A without going over 0.50 A!',
-      outback:
-        'Check battery Volts across TP1–TP2 to unlock Hatch 1, turn OFF the Warning Horn, and set Resistance Dial VR1 using R = V ÷ I so the Charge Coil stays at 0.35 A–0.45 A!',
+      forensic: 'Check TP1–TP2 to unlock Hatch 1. Use R = V ÷ I to set Dial VR1 so Check A1 reads 0.35–0.45 A (over 0.50 A burns it out!).',
+      rov: 'Check TP1–TP2 to unlock Hatch 1. Use R = V ÷ I to set Dial VR1 so Check A1 reads 0.35–0.45 A (over 0.50 A burns it out!).',
+      outback: 'Check TP1–TP2 to unlock Hatch 1, cut the Horn, and set Dial VR1 so Check A1 reads 0.35–0.45 A.',
     },
-    debriefNote:
-      'Spot on! Using R = V ÷ I (12 V ÷ 0.40 A = 30 Ω) kept the coil right in the safe zone without burning it out!',
+    debriefNote: 'R = V ÷ I (12 V ÷ 0.40 A = 30 Ω) kept the coil right inside the safe current window.',
     nodes: [
       {
         id: 'tp1',
@@ -2604,10 +2555,10 @@ export const LEVELS: LevelDefinition[] = [
           {
             stageNumber: 1,
             code: '012',
-            title: 'Check Battery Voltage',
+            title: 'Battery Voltage',
             prompt:
-              'Use the Pocket Meter in VOLTS (V) mode and click TP1 ↔ TP2 to measure the battery voltage. Enter the number of Volts as 3 digits (like 012).',
-            formulaHint: 'Tip: Click the TP1 ↔ TP2 button on the Pocket Meter below!',
+              'Tap Check V: TP1–TP2 to measure the battery Volts. Enter as 3 digits (like 012).',
+            formulaHint: 'Tap the highlighted TP1–TP2 check button!',
             syllabusNote: 'NSW Stage 5 PW3b — Measure V first, then calculate R = V / I independently',
           },
         ],
@@ -2652,42 +2603,26 @@ export const LEVELS: LevelDefinition[] = [
   {
     id: 8,
     phase: 2,
-    phaseTitle: 'Stage 2 · Using the Pocket Meter',
+    phaseTitle: 'Stage 2 · Checking Volts & Amps',
     title: 'Save the 5 A Fuse!',
     syllabusCodes: ['PW3c'],
     multimeterEnabled: true,
-    standardSeconds: 300,
-    hardwarePanels: [
-      {
-        id: 'front',
-        label: 'Front Panel',
-        subtitle: 'S1–S3 · 5 A Fuse & Extra Gear',
-        switchIds: ['S1', 'S2', 'S3'],
-        componentIds: ['V1', 'F1', 'LAMP1', 'LAMP2'],
-        hatchIds: [],
-        testPointNodeIds: ['bat_pos', 'bat_neg'],
-        shuntComponentIds: ['F1', 'LAMP1', 'LAMP2'],
-      },
-      {
-        id: 'back',
-        label: 'Back Panel',
-        subtitle: 'S4–S6 · Important Gear & Hatch',
-        switchIds: ['S4', 'S5', 'S6'],
-        componentIds: ['FAN1', 'LED1'],
-        hatchIds: ['H1'],
-        shuntComponentIds: ['FAN1', 'LED1'],
-      },
+    panelStyle: 'switchboard',
+    checkZones: [
+      { id: 'a_fuse', kind: 'A', label: 'A0', sublabel: 'Fuse F1 Total', componentId: 'F1', highlight: true },
+      { id: 'a_l1', kind: 'A', label: 'A1', sublabel: 'Extra L1', componentId: 'LAMP1', highlight: true },
+      { id: 'a_l2', kind: 'A', label: 'A2', sublabel: 'Extra L2', componentId: 'LAMP2', highlight: true },
+      { id: 'a_m1', kind: 'A', label: 'A3', sublabel: 'Pump M1', componentId: 'FAN1' },
+      { id: 'a_led', kind: 'A', label: 'A4', sublabel: 'Beacon LED1', componentId: 'LED1' },
+      { id: 'v_bat', kind: 'V', label: 'TP1–TP2', sublabel: 'Battery', nodeA: 'bat_pos', nodeB: 'bat_neg' },
     ],
+    standardSeconds: 300,
     briefings: {
-      forensic:
-        'All four parts share one 5.0 A safety fuse (F1). Switch the Pocket Meter to AMPS (A) and check clips A1–A4. Turn OFF the extra parts FIRST so the fuse stays under 5 A, then turn ON the Pump and Beacon on the Back Panel!',
-      rov:
-        'Four sub parts share one 5.0 A safety fuse (F1). Check AMPS (A) at clips A1–A4, turn OFF the extra Floodlight and Heater FIRST, then flip ON the Pump and Beacon without blowing the fuse!',
-      outback:
-        'One 5.0 A fuse (F1) protects four parts. Use AMPS (A) on clips A1–A4 to see each current. Switch OFF the extra 1.5 A and 2.0 A parts first, then turn ON the 2.5 A Cooler and 1.0 A Beacon!',
+      forensic: 'Check A0–A2 to watch the 5.0 A fuse (F1). Switch OFF extra parts L1 & L2 FIRST, then power M1 and LED1.',
+      rov: 'Check A0–A2 to watch the 5.0 A fuse (F1). Switch OFF extra parts L1 & L2 FIRST, then power M1 and LED1.',
+      outback: 'Check A0–A2 to watch the 5.0 A fuse (F1). Switch OFF extra parts L1 & L2 FIRST, then power M1 and LED1.',
     },
-    debriefNote:
-      'Fuse saved! In a parallel circuit, all branch currents add up on the main wire — turning OFF heavy parts first kept F1 safely under 5.0 A!',
+    debriefNote: 'Parallel currents add up on the main wire — cutting extra loads first kept F1 under 5.0 A.',
     nodes: [
       {
         id: 'bat_pos',
@@ -3083,10 +3018,10 @@ export const LEVELS: LevelDefinition[] = [
           {
             stageNumber: 1,
             code: '060',
-            title: 'Add Up the Currents!',
+            title: 'Add Up the Currents',
             prompt:
-              'Check clips A1 (1.5 A) and A2 (2.0 A). If you turned ON the 2.5 A Main Pump while BOTH extra parts were still ON, what would the total current through fuse F1 be? Enter 6.0 A without the dot (060).',
-            formulaHint: 'Add them up: 1.5 + 2.0 + 2.5 = ? (enter 6.0 as 060)',
+              'Check A1 (1.5 A) and A2 (2.0 A). If you added the 2.5 A Pump while both were ON, what total Amps would hit F1? Enter 6.0 as 060.',
+            formulaHint: '1.5 + 2.0 + 2.5 = ? (enter without the dot, e.g. 060)',
             syllabusNote: 'NSW Stage 5 PW3c — Summation of parallel branch currents',
           },
         ],
@@ -3136,18 +3071,21 @@ export const LEVELS: LevelDefinition[] = [
     title: 'Stop the Overheating!',
     syllabusCodes: ['PW4a', 'PW4b'],
     multimeterEnabled: true,
+    panelStyle: 'switchboard',
+    checkZones: [
+      { id: 'a_l1', kind: 'A', label: 'A1', sublabel: 'Hot Globe L1', componentId: 'LAMP1', highlight: true },
+      { id: 'a_l2', kind: 'A', label: 'A2', sublabel: 'Hot Globe L2', componentId: 'LAMP2', highlight: true },
+      { id: 'a_led', kind: 'A', label: 'A3', sublabel: 'Cool LED1', componentId: 'LED1' },
+      { id: 'v_bat', kind: 'V', label: 'TP1–TP2', sublabel: 'Battery', nodeA: 'bat_pos', nodeB: 'bat_neg' },
+    ],
     standardSeconds: 300,
     thermalEnabled: true,
     briefings: {
-      forensic:
-        'Two hot old light globes waste 85% of their power as heat and are overheating the box! Turn OFF both hot globes fast, unlock Hatch 1, and switch ON the cool LED lights instead.',
-      rov:
-        'Two hot light globes waste 85% of their power as heat inside the sub! Turn OFF both hot globes, unlock Hatch 1, and switch ON the cool LED lights to bring the temperature down.',
-      outback:
-        'Two hot old globes are overheating the solar box! Turn OFF both hot globes, unlock Hatch 1, and turn ON the cool LED lights so the box cools down.',
+      forensic: 'Hot globes L1 & L2 waste 85% energy as heat! Cut both hot globes fast, unlock Hatch 1, and switch ON both cool LEDs.',
+      rov: 'Hot globes L1 & L2 waste 85% energy as heat! Cut both hot globes fast, unlock Hatch 1, and switch ON both cool LEDs.',
+      outback: 'Hot globes L1 & L2 waste 85% energy as heat! Cut both hot globes fast, unlock Hatch 1, and switch ON both cool LEDs.',
     },
-    debriefNote:
-      'Nice and cool! Swapping from hot 60 W globes (85% waste heat) to cool LEDs cut way down on wasted heat!',
+    debriefNote: 'Swapping from hot 60 W globes to cool LEDs slashed wasted heat by over 80%.',
     nodes: [
       {
         id: 'bat_pos',
@@ -3538,37 +3476,19 @@ export const LEVELS: LevelDefinition[] = [
     title: 'One-Way Diodes & Final Boss',
     syllabusCodes: ['PW3b', 'PW3c', 'PW4b'],
     multimeterEnabled: true,
-    standardSeconds: 360,
-    hardwarePanels: [
-      {
-        id: 'front',
-        label: 'Front Panel',
-        subtitle: 'S1–S4 · Lights, Siren & One-Way Diodes',
-        switchIds: ['S1', 'S2', 'S3', 'S4'],
-        componentIds: ['V1', 'D1', 'LED1', 'D2', 'SIREN1'],
-        hatchIds: [],
-        testPointNodeIds: ['bat_pos', 'bat_neg'],
-      },
-      {
-        id: 'back',
-        label: 'Back Panel',
-        subtitle: 'S5–S7 · Test Diode, Fan Dial & 2-Step Hatch',
-        switchIds: ['S5', 'S6', 'S7'],
-        componentIds: ['D3', 'R_DIAG', 'R1', 'VR1', 'FAN1', 'LAMP1'],
-        hatchIds: ['H1'],
-        shuntComponentIds: ['D3', 'FAN1'],
-      },
+    panelStyle: 'switchboard',
+    checkZones: [
+      { id: 'a_d3', kind: 'A', label: 'A1', sublabel: 'Diode D3', componentId: 'D3', highlight: true },
+      { id: 'a_fan', kind: 'A', label: 'A2', sublabel: 'Fan M1 Amps', componentId: 'FAN1', highlight: true },
+      { id: 'v_bat', kind: 'V', label: 'TP1–TP2', sublabel: 'Battery Volts', nodeA: 'bat_pos', nodeB: 'bat_neg', highlight: true },
     ],
+    standardSeconds: 360,
     briefings: {
-      forensic:
-        'Final box! Front Panel: S1 is stuck OFF — send power around it through one-way diode D1, and cut the sneaky side-path through D2 so the Siren stops. Back Panel: unlock the 2-step hatch and turn Dial VR1 (with R1 = 10 Ω) so the Fan runs at 0.36 A–0.44 A!',
-      rov:
-        'Final rescue! Front Panel: S1 is stuck OFF — go around it via one-way diode D1 and block the side-path through D2 to silence the Alarm. Back Panel: unlock the 2-step hatch and dial VR1 (plus R1 = 10 Ω) so the Fan gets 0.36 A–0.44 A!',
-      outback:
-        'Final station! Front Panel: S1 is stuck OFF — route power through one-way diode D1 and stop the D2 side-path into the Siren. Back Panel: open the 2-step hatch and turn Dial VR1 (plus R1 = 10 Ω) so the Fan holds 0.36 A–0.44 A!',
+      forensic: 'S1 is stuck OFF! Route power through diode D1, cut D2 to stop the Siren, unlock Hatch 1 (check A1 & TP1–TP2), and dial VR1 so A2 reads 0.36–0.44 A.',
+      rov: 'S1 is stuck OFF! Route power through diode D1, cut D2 to stop the Alarm, unlock Hatch 1 (check A1 & TP1–TP2), and dial VR1 so A2 reads 0.36–0.44 A.',
+      outback: 'S1 is stuck OFF! Route power through diode D1, cut D2 to stop the Siren, unlock Hatch 1 (check A1 & TP1–TP2), and dial VR1 so A2 reads 0.36–0.44 A.',
     },
-    debriefNote:
-      'Final Boss cleared! You worked around a stuck switch using one-way diodes, stopped a sneaky side-path, and nailed the exact dial setting!',
+    debriefNote: 'Final Boss cleared! You routed around stuck S1 with diodes, cut the side-path, and nailed R = V ÷ I.',
     nodes: [
       {
         id: 'bat_pos',
@@ -4149,10 +4069,10 @@ export const LEVELS: LevelDefinition[] = [
           {
             stageNumber: 1,
             code: '000',
-            title: 'Step 1 of 2 · Backwards Diode Check',
+            title: 'Step 1 of 2 · Backwards Diode',
             prompt:
-              'Check Diode D3 on the circuit map (or click Clip A1 in AMPS mode below). D3 is facing backwards, so its flat bar blocks the power! How many Amps flow through D3? Enter 3 digits.',
-            formulaHint: 'Tip: Click AMPS (A) → Clip A1 on the Pocket Meter below!',
+              'Tap Check A: A1 on the switchboard (or look at D3 on your Circuit Map). How many Amps pass through backwards diode D3? Enter 3 digits.',
+            formulaHint: 'Tap the highlighted A1 check button!',
             syllabusNote: 'Stage 5 Extension — Semiconductor diode polarity',
           },
           {

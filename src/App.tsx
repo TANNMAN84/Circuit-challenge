@@ -16,8 +16,9 @@ import {
 } from './types/circuit';
 import { MissionHub } from './components/MissionHub';
 import { HardwarePanelSvg } from './components/HardwarePanelSvg';
+import { SwitchboardPanel } from './components/SwitchboardPanel';
+import { CheckZoneBar } from './components/CheckZoneBar';
 import { SchematicSvg } from './components/SchematicSvg';
-import { VirtualMultimeter } from './components/VirtualMultimeter';
 import { RetroDigitalClock } from './components/RetroDigitalClock';
 import { KeypadModal } from './components/KeypadModal';
 import { TeacherPinModal, TeacherToolbar } from './components/TeacherPinModal';
@@ -29,7 +30,6 @@ import {
   CheckCircle2,
   Circle,
   Flame,
-  FlipHorizontal2,
   Lock,
   Moon,
   Printer,
@@ -150,28 +150,13 @@ export default function App() {
   const [faultState, setFaultState] = useState<FaultState>(EMPTY_FAULT);
   const [isWon, setIsWon] = useState(false);
   const [activeHatchModal, setActiveHatchModal] = useState<CircuitHatch | null>(null);
-  const [activePanelId, setActivePanelId] = useState<string>('front');
 
   // Countdown timer & Level 9 heat gauge state
   const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
   const [thermalPct, setThermalPct] = useState<number>(20);
 
-  // Docked Beginner Pocket Meter state (Levels 6–10)
-  const [multimeterMode, setMultimeterMode] = useState<'V' | 'A'>('V');
-  const [redNodeId, setRedNodeId] = useState<string | null>(null);
-  const [blackNodeId, setBlackNodeId] = useState<string | null>(null);
-  const [clampComponentId, setClampComponentId] = useState<string | null>(null);
-  const [activeProbeSelection, setActiveProbeSelection] = useState<'red' | 'black' | 'clamp' | null>('red');
-
-  const activePanel = useMemo(() => {
-    if (!activeLevel?.hardwarePanels || activeLevel.hardwarePanels.length === 0) {
-      return undefined;
-    }
-    return (
-      activeLevel.hardwarePanels.find((p) => p.id === activePanelId) ??
-      activeLevel.hardwarePanels[0]
-    );
-  }, [activeLevel, activePanelId]);
+  // Active inline Check Zones (Levels 6–10)
+  const [activeCheckZoneIds, setActiveCheckZoneIds] = useState<string[]>([]);
 
   const winAnnouncedRef = useRef(false);
 
@@ -227,59 +212,12 @@ export default function App() {
       setFaultState(EMPTY_FAULT);
       setIsWon(false);
       setActiveHatchModal(null);
-      setActivePanelId(level.hardwarePanels?.[0]?.id ?? 'front');
       setRemainingSeconds(computeLevelSeconds(level.standardSeconds, confidenceTier));
       setThermalPct(level.thermalEnabled ? 78 : 20);
-      setMultimeterMode('V');
-      setRedNodeId(null);
-      setBlackNodeId(null);
-      setClampComponentId(null);
-      setActiveProbeSelection('red');
+      setActiveCheckZoneIds([]);
       winAnnouncedRef.current = false;
     },
     [confidenceTier],
-  );
-
-  // Helper to flip 2-panel boxes automatically when a student taps a test point, clip, or objective
-  const jumpToPanelForNode = useCallback(
-    (nodeId: string) => {
-      if (!activeLevel?.hardwarePanels) return;
-      const target = activeLevel.hardwarePanels.find((p) =>
-        p.testPointNodeIds?.includes(nodeId),
-      );
-      if (target && target.id !== activePanelId) {
-        setActivePanelId(target.id);
-      }
-    },
-    [activeLevel, activePanelId],
-  );
-
-  const jumpToPanelForComp = useCallback(
-    (componentId: string) => {
-      if (!activeLevel?.hardwarePanels) return;
-      const target = activeLevel.hardwarePanels.find(
-        (p) =>
-          p.componentIds.includes(componentId) ||
-          p.shuntComponentIds?.includes(componentId),
-      );
-      if (target && target.id !== activePanelId) {
-        setActivePanelId(target.id);
-      }
-    },
-    [activeLevel, activePanelId],
-  );
-
-  const jumpToPanelForSwitch = useCallback(
-    (switchId: string) => {
-      if (!activeLevel?.hardwarePanels) return;
-      const target = activeLevel.hardwarePanels.find((p) =>
-        p.switchIds.includes(switchId),
-      );
-      if (target && target.id !== activePanelId) {
-        setActivePanelId(target.id);
-      }
-    },
-    [activeLevel, activePanelId],
   );
 
   const handleLaunchLevel = useCallback(
@@ -323,15 +261,12 @@ export default function App() {
       if (solution.shortCircuit.detected) {
         soundEngine.playFaultTrip();
         setShakeTrigger((n) => n + 1);
-        if (solution.shortCircuit.faultSwitchIds[0]) {
-          jumpToPanelForSwitch(solution.shortCircuit.faultSwitchIds[0]);
-        }
         setFaultState({
           locked: true,
           kind: 'short',
           title: 'SHORT CIRCUIT — BREAKER TRIPPED!',
           detail:
-            'You made a direct wire loop from + to − with nothing to slow the power down. Check the glowing red wires and press Reset.',
+            'Direct loop from + to − with no load. Check the glowing red wires and press Reset.',
           highlightWireIds: solution.shortCircuit.faultWireIds,
           highlightComponentIds: ['V1'],
           highlightSwitchIds: solution.shortCircuit.faultSwitchIds,
@@ -343,13 +278,12 @@ export default function App() {
         soundEngine.playFaultTrip();
         setShakeTrigger((n) => n + 1);
         const fuseId = solution.blownFuseIds[0];
-        jumpToPanelForComp(fuseId);
         const fuseComp = activeLevel.components.find((c) => c.id === fuseId);
         setFaultState({
           locked: true,
           kind: 'fuse',
           title: `FUSE ${fuseComp?.code ?? fuseId} BLEW!`,
-          detail: `Too much current flowed through the ${fuseComp?.maxCurrentAmps?.toFixed(1) ?? '5.0'} A fuse at once and snapped the wire inside. Switch off extra parts first!`,
+          detail: `Current passed ${fuseComp?.maxCurrentAmps?.toFixed(1) ?? '5.0'} A and snapped the fuse. Switch off extra loads first.`,
           highlightWireIds: [],
           highlightComponentIds: solution.blownFuseIds,
           highlightSwitchIds: [],
@@ -361,14 +295,13 @@ export default function App() {
         soundEngine.playFaultTrip();
         setShakeTrigger((n) => n + 1);
         const cid = solution.overloadedComponentIds[0];
-        jumpToPanelForComp(cid);
         const comp = activeLevel.components.find((c) => c.id === cid);
         const br = solution.branches[cid];
         setFaultState({
           locked: true,
           kind: 'overload',
           title: `${comp?.code ?? cid} OVERLOADED!`,
-          detail: `Current jumped to ${Math.abs(br?.currentAmps ?? 0).toFixed(2)} A, which is over the ${comp?.maxCurrentAmps?.toFixed(2)} A limit. Work out R = V ÷ I and set the Resistance Dial before switching it on.`,
+          detail: `Current hit ${Math.abs(br?.currentAmps ?? 0).toFixed(2)} A (limit ${comp?.maxCurrentAmps?.toFixed(2)} A). Use R = V ÷ I and set Dial VR1 first.`,
           highlightWireIds: [],
           highlightComponentIds: solution.overloadedComponentIds,
           highlightSwitchIds: [],
@@ -379,7 +312,6 @@ export default function App() {
       if (solution.triggeredTrap) {
         soundEngine.playFaultTrip();
         setShakeTrigger((n) => n + 1);
-        jumpToPanelForComp(solution.triggeredTrap.componentId);
         setFaultState({
           locked: true,
           kind: 'sequence',
@@ -411,15 +343,7 @@ export default function App() {
         });
       }
     }
-  }, [
-    activeLevel,
-    solution,
-    blownFuseIds,
-    faultState.locked,
-    thermalPct,
-    jumpToPanelForComp,
-    jumpToPanelForSwitch,
-  ]);
+  }, [activeLevel, solution, blownFuseIds, faultState.locked, thermalPct]);
 
   // Deterministic 1-second Confidence Countdown Timer
   useEffect(() => {
@@ -534,23 +458,19 @@ export default function App() {
     setUnlockedHatches(all);
   };
 
-  const handleSelectTestPoint = (nodeId: string) => {
-    if (multimeterMode !== 'V') return;
-    soundEngine.playKeypadBeep(2);
-    if (activeProbeSelection === 'black') {
-      setBlackNodeId(nodeId);
-      if (!redNodeId) setActiveProbeSelection('red');
-    } else {
-      setRedNodeId(nodeId);
-      setActiveProbeSelection('black');
-    }
-  };
+  const handleToggleCheckZone = useCallback((zoneId: string) => {
+    setActiveCheckZoneIds((prev) =>
+      prev.includes(zoneId) ? prev.filter((id) => id !== zoneId) : [...prev, zoneId],
+    );
+  }, []);
 
-  const handleSelectShunt = (componentId: string) => {
-    if (multimeterMode !== 'A') return;
-    soundEngine.playKeypadBeep(5);
-    setClampComponentId((prev) => (prev === componentId ? null : componentId));
-  };
+  const handleToggleAllCheckZones = useCallback(
+    (showAll: boolean) => {
+      if (!activeLevel?.checkZones) return;
+      setActiveCheckZoneIds(showAll ? activeLevel.checkZones.map((z) => z.id) : []);
+    },
+    [activeLevel],
+  );
 
   const handleUpdatePin = (newPin: string) => {
     setTeacherPin(newPin);
@@ -843,9 +763,9 @@ export default function App() {
               </div>
             </div>
 
-            {/* Two-Zone Game Workbench (~68% Tactile Hardware Case + Docked Meter / ~32% Red Clock + Checklist) */}
+            {/* Two-Zone Game Workbench (~68% Tactile Hardware Case / ~32% Red Clock + Checklist) */}
             <div className="grid lg:grid-cols-12 gap-5 items-start">
-              {/* LEFT ZONE: THEMED TACTILE HARDWARE CASE + DOCKED POCKET METER */}
+              {/* LEFT ZONE: HYBRID WIRED BAY OR INDUSTRIAL SWITCHBOARD */}
               <section className="lg:col-span-8 space-y-3">
                 <div
                   key={shakeTrigger}
@@ -860,147 +780,57 @@ export default function App() {
                   {/* Scenario-Themed Caution / Bulkhead / Storm Trim Strip */}
                   <div className={`h-2 w-full ${scenarioMeta.stripeClass}`} />
 
-                  {/* 2-PANEL FLIP BOX SWITCHER BAR (Shown on multi-panel missions 05, 06, 08, 10) */}
-                  {activeLevel.hardwarePanels && activeLevel.hardwarePanels.length > 1 && (
-                    <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5 bg-[#121722] border-b border-slate-800">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        {activeLevel.hardwarePanels.map((panel) => {
-                          const isSelected = activePanel?.id === panel.id;
-                          const panelChecks = solution.winChecks.filter((wc) =>
-                            panel.componentIds.includes(wc.componentId),
-                          );
-                          const doneCount = panelChecks.filter((w) => w.satisfied).length;
-                          const hasLockedHatch = panel.hatchIds.some(
-                            (hid) => !unlockedHatches[hid],
-                          );
-                          const hasAlert =
-                            panel.componentIds.some((cid) =>
-                              faultState.highlightComponentIds.includes(cid),
-                            ) ||
-                            panel.switchIds.some((sid) =>
-                              faultState.highlightSwitchIds.includes(sid),
-                            );
-
-                          return (
-                            <button
-                              key={panel.id}
-                              type="button"
-                              onClick={() => {
-                                if (!isSelected) {
-                                  soundEngine.playSwitchClick(true);
-                                  setActivePanelId(panel.id);
-                                }
-                              }}
-                              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all ${
-                                isSelected
-                                  ? 'bg-amber-400 border-amber-300 text-slate-950 shadow-sm'
-                                  : 'bg-slate-800/90 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white'
-                              }`}
-                            >
-                              <span>{panel.label}</span>
-                              {panelChecks.length > 0 && (
-                                <span
-                                  className={`font-mono text-[10.5px] px-1.5 py-0.5 rounded ${
-                                    isSelected
-                                      ? 'bg-slate-950/15 text-slate-950'
-                                      : doneCount === panelChecks.length
-                                        ? 'bg-emerald-500/20 text-emerald-300'
-                                        : 'bg-slate-900 text-slate-300'
-                                  }`}
-                                >
-                                  {doneCount}/{panelChecks.length}
-                                </span>
-                              )}
-                              {hasLockedHatch && (
-                                <Lock
-                                  className={`w-3 h-3 ${
-                                    isSelected ? 'text-slate-950' : 'text-amber-400'
-                                  }`}
-                                />
-                              )}
-                              {hasAlert && (
-                                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const panels = activeLevel.hardwarePanels!;
-                          const idx = panels.findIndex((p) => p.id === activePanel?.id);
-                          const next = panels[(idx + 1) % panels.length];
-                          soundEngine.playSwitchClick(true);
-                          setActivePanelId(next.id);
-                        }}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs font-extrabold text-amber-300 transition-colors whitespace-nowrap"
-                      >
-                        <FlipHorizontal2 className="w-3.5 h-3.5" />
-                        Flip Box
-                      </button>
-                    </div>
-                  )}
-
                   <div className="relative p-2 sm:p-3">
-                    <HardwarePanelSvg
-                      level={activeLevel}
-                      scenario={scenario}
-                      activePanel={activePanel}
-                      switchStates={switchStates}
-                      rheostatValues={rheostatValues}
-                      unlockedHatches={unlockedHatches}
-                      solution={solution}
-                      faultState={faultState}
-                      showViBadges={showViBadges}
-                      isDark={isDark}
-                      multimeterMode={multimeterMode}
-                      redNodeId={redNodeId}
-                      blackNodeId={blackNodeId}
-                      clampComponentId={clampComponentId}
-                      activeProbeSelection={activeProbeSelection}
-                      onSelectTestPoint={handleSelectTestPoint}
-                      onSelectShunt={handleSelectShunt}
-                      onToggleSwitch={handleToggleSwitch}
-                      onChangeRheostat={handleChangeRheostat}
-                      onOpenHatch={(hatch) => setActiveHatchModal(hatch)}
-                    />
+                    {activeLevel.panelStyle === 'switchboard' ? (
+                      <SwitchboardPanel
+                        level={activeLevel}
+                        scenario={scenario}
+                        switchStates={switchStates}
+                        rheostatValues={rheostatValues}
+                        unlockedHatches={unlockedHatches}
+                        solution={solution}
+                        faultState={faultState}
+                        showViBadges={showViBadges}
+                        activeCheckZoneIds={activeCheckZoneIds}
+                        onToggleCheckZone={handleToggleCheckZone}
+                        onToggleAllCheckZones={handleToggleAllCheckZones}
+                        onToggleSwitch={handleToggleSwitch}
+                        onChangeRheostat={handleChangeRheostat}
+                        onOpenHatch={(hatch) => setActiveHatchModal(hatch)}
+                      />
+                    ) : (
+                      <HardwarePanelSvg
+                        level={activeLevel}
+                        scenario={scenario}
+                        switchStates={switchStates}
+                        rheostatValues={rheostatValues}
+                        unlockedHatches={unlockedHatches}
+                        solution={solution}
+                        faultState={faultState}
+                        showViBadges={showViBadges}
+                        isDark={isDark}
+                        activeCheckZoneIds={activeCheckZoneIds}
+                        onToggleCheckZone={handleToggleCheckZone}
+                        onToggleSwitch={handleToggleSwitch}
+                        onChangeRheostat={handleChangeRheostat}
+                        onOpenHatch={(hatch) => setActiveHatchModal(hatch)}
+                      />
+                    )}
                   </div>
                 </div>
 
-                {/* DOCKED BEGINNER POCKET METER (Sits cleanly BELOW the box — never blocks switches or wires!) */}
-                {activeLevel.multimeterEnabled && (
-                  <VirtualMultimeter
-                    level={activeLevel}
-                    solution={solution}
-                    mode={multimeterMode}
-                    onChangeMode={(m) => {
-                      setMultimeterMode(m);
-                      setActiveProbeSelection(m === 'V' ? 'red' : 'clamp');
-                    }}
-                    redNodeId={redNodeId}
-                    blackNodeId={blackNodeId}
-                    clampComponentId={clampComponentId}
-                    onSnapRed={setRedNodeId}
-                    onSnapBlack={setBlackNodeId}
-                    onSnapClamp={setClampComponentId}
-                    onJumpToPanelForNode={jumpToPanelForNode}
-                    onJumpToPanelForComp={jumpToPanelForComp}
-                  />
-                )}
-
-                {/* Simple 1-Line Beginner Help Strip */}
-                <div className="rounded-lg bg-white/85 dark:bg-slate-950/78 backdrop-blur-sm border border-slate-300/70 dark:border-slate-800 px-3.5 py-2 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-700 dark:text-slate-300">
-                  <span>
-                    Click switches (<span className="font-mono font-bold">S1–S{activeLevel.switches.length}</span>) to flip them · Use your Circuit Map to see what each switch controls.
-                  </span>
-                  {activeLevel.hardwarePanels && activeLevel.hardwarePanels.length > 1 && (
-                    <span className={`font-mono font-semibold ${scenarioMeta.accentTextClass}`}>
-                      2-sided box · Use Flip Box to check both sides
-                    </span>
+                {/* Inline Check Zones Bar for Wired Bays with Measurements (Level 7) */}
+                {activeLevel.panelStyle !== 'switchboard' &&
+                  activeLevel.checkZones &&
+                  activeLevel.checkZones.length > 0 && (
+                    <CheckZoneBar
+                      zones={activeLevel.checkZones}
+                      solution={solution}
+                      activeZoneIds={activeCheckZoneIds}
+                      onToggleZone={handleToggleCheckZone}
+                      onToggleAll={handleToggleAllCheckZones}
+                    />
                   )}
-                </div>
               </section>
 
               {/* RIGHT ZONE: RETRO RED DIGITAL CLOCK, OBJECTIVES & ACTION DECK */}
@@ -1127,47 +957,69 @@ export default function App() {
                   </div>
                 )}
 
-                {/* MISSION BRIEFING */}
-                <div className="rounded-xl border border-slate-300/80 dark:border-slate-700/80 bg-white/90 dark:bg-slate-950/85 backdrop-blur-md p-4 space-y-1.5 shadow-md">
+                {/* CONCISE MISSION BRIEFING + HIGHLIGHTED CHECK ZONES */}
+                <div className="rounded-xl border border-slate-300/80 dark:border-slate-700/80 bg-white/90 dark:bg-slate-950/85 backdrop-blur-md p-4 space-y-2.5 shadow-md">
                   <h2 className={`text-xs font-mono font-bold uppercase tracking-wider ${scenarioMeta.accentTextClass}`}>
-                    Your Mission
+                    Mission
                   </h2>
-                  <p className="text-sm leading-relaxed text-slate-800 dark:text-slate-200">
+                  <p className="text-sm leading-snug text-slate-800 dark:text-slate-200">
                     {activeLevel.briefings[scenario]}
                   </p>
+
+                  {activeLevel.checkZones &&
+                    activeLevel.checkZones.some((z) => z.highlight) && (
+                      <div className="pt-1 flex flex-wrap items-center gap-1.5">
+                        <span className="text-[10.5px] font-mono font-bold uppercase text-slate-500 dark:text-slate-400">
+                          Key Checks:
+                        </span>
+                        {activeLevel.checkZones
+                          .filter((z) => z.highlight)
+                          .map((z) => {
+                            const isOpen = activeCheckZoneIds.includes(z.id);
+                            return (
+                              <button
+                                key={z.id}
+                                type="button"
+                                onClick={() => {
+                                  soundEngine.playKeypadBeep(z.kind === 'V' ? 2 : 5);
+                                  handleToggleCheckZone(z.id);
+                                }}
+                                className={`px-2 py-0.5 rounded font-mono text-[11px] font-bold border transition-colors ${
+                                  isOpen
+                                    ? z.kind === 'V'
+                                      ? 'bg-amber-400 border-amber-500 text-slate-950'
+                                      : 'bg-sky-400 border-sky-500 text-slate-950'
+                                    : z.kind === 'V'
+                                      ? 'bg-amber-500/15 border-amber-500/50 text-amber-800 dark:text-amber-300 hover:bg-amber-500/25'
+                                      : 'bg-sky-500/15 border-sky-500/50 text-sky-800 dark:text-sky-300 hover:bg-sky-500/25'
+                                }`}
+                              >
+                                {z.kind}: {z.label}
+                              </button>
+                            );
+                          })}
+                      </div>
+                    )}
                 </div>
 
                 {/* CHECKLIST */}
                 <div className="rounded-xl border border-slate-300/80 dark:border-slate-700/80 bg-white/90 dark:bg-slate-950/85 backdrop-blur-md p-4 space-y-3 shadow-md">
                   <div className="flex items-center justify-between">
                     <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
-                      Your Checklist
+                      Checklist
                     </h2>
                     <span className="text-xs font-mono font-bold tabular-nums text-slate-700 dark:text-slate-300">
-                      {solution.winChecks.filter((w) => w.satisfied).length} / {solution.winChecks.length} done
+                      {solution.winChecks.filter((w) => w.satisfied).length} / {solution.winChecks.length}
                     </span>
                   </div>
 
                   <ul className="divide-y divide-slate-200/80 dark:divide-slate-800">
                     {solution.winChecks.map((wc) => {
                       const comp = activeLevel.components.find((c) => c.id === wc.componentId);
-                      const ownerPanel = activeLevel.hardwarePanels?.find((p) =>
-                        p.componentIds.includes(wc.componentId),
-                      );
-                      const isOtherPanel =
-                        ownerPanel && activePanel && ownerPanel.id !== activePanel.id;
                       return (
                         <li
                           key={wc.conditionId}
-                          onClick={() => {
-                            if (ownerPanel && ownerPanel.id !== activePanelId) {
-                              soundEngine.playSwitchClick(true);
-                              setActivePanelId(ownerPanel.id);
-                            }
-                          }}
-                          className={`py-2 first:pt-0 last:pb-0 flex items-center justify-between gap-2 text-xs ${
-                            ownerPanel ? 'cursor-pointer hover:opacity-85' : ''
-                          }`}
+                          className="py-2 first:pt-0 last:pb-0 flex items-center justify-between gap-2 text-xs"
                         >
                           <div className="flex items-center gap-2 min-w-0">
                             {wc.satisfied ? (
@@ -1180,18 +1032,7 @@ export default function App() {
                                 {wc.label}
                               </div>
                               <div className="font-mono text-[10.5px] text-slate-500 dark:text-slate-400">
-                                {comp?.code} · Need: {wc.targetText}
-                                {ownerPanel && (
-                                  <span
-                                    className={`ml-1.5 ${
-                                      isOtherPanel
-                                        ? 'text-amber-700 dark:text-amber-400 font-bold'
-                                        : 'text-slate-400 dark:text-slate-500'
-                                    }`}
-                                  >
-                                    ({ownerPanel.label.replace(' Panel', '')})
-                                  </span>
-                                )}
+                                {comp?.code} · {wc.targetText}
                               </div>
                             </div>
                           </div>

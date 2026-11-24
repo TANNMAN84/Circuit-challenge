@@ -65,7 +65,7 @@ export const PrintWorksheet: React.FC<PrintWorksheetProps> = ({
             <span>CIRCUIT MAP</span>
             <span>
               {level.multimeterEnabled
-                ? 'VOLTS (V): YELLOW TP PINS · AMPS (A): BLUE A CLIPS'
+                ? 'CHECK ZONES: VOLTS (V) ON TP PINS · AMPS (A) ON A CLIPS'
                 : 'STARTING SWITCH POSITIONS SHOWN'}
             </span>
           </div>

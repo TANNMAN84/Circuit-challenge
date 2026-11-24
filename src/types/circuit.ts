@@ -199,6 +199,22 @@ export interface HardwarePanelSection {
   shuntComponentIds?: string[];
 }
 
+export interface CheckZone {
+  id: string;
+  kind: 'V' | 'A';
+  /** Short tag shown on the check button, e.g. "TP2–TP3" or "A1" */
+  label: string;
+  /** Concise location label, e.g. "Across R2" or "Fuse F1" */
+  sublabel: string;
+  /** Node pair for Voltage (V) check */
+  nodeA?: string;
+  nodeB?: string;
+  /** Component ID for inline Current (A) check */
+  componentId?: string;
+  /** Highlight this check zone to guide the student toward the mission goal */
+  highlight?: boolean;
+}
+
 export interface LevelDefinition {
   id: number;
   phase: 1 | 2 | 3;
@@ -206,13 +222,17 @@ export interface LevelDefinition {
   title: string;
   syllabusCodes: string[];
   multimeterEnabled: boolean;
+  /** Physical bay style: 'wired' shows coloured wire looms; 'switchboard' shows a clean industrial switchboard panel */
+  panelStyle?: 'wired' | 'switchboard';
+  /** Inline Check Voltage / Check Current zones for Levels 6–10 */
+  checkZones?: CheckZone[];
   /** Base countdown seconds for Standard confidence tier (L1-5: 120-210s, L6-10: 240-360s) */
   standardSeconds: number;
   /** Explicit anti-tamper warning shown on both screen and printed sheet (Level 5) */
   antiTamperWarning?: string;
   /** Whether this level includes the live thermal runaway gauge (Level 9) */
   thermalEnabled?: boolean;
-  /** Optional 2-panel modular bay split (Front Panel / Back Panel) for complex multi-part devices */
+  /** Optional 2-panel modular bay split (legacy/optional) */
   hardwarePanels?: HardwarePanelSection[];
   /** Briefings skinned per mission scenario */
   briefings: ScenarioTextMap;

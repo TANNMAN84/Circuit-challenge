@@ -52,18 +52,18 @@ export const MissionHub: React.FC<MissionHubProps> = ({
   const operations = [
     {
       num: 1 as const,
-      title: 'Stage 1 · Wires, Switches & Traps',
-      subtitle: 'Missions 01–05 · Read the circuit map, dodge short circuits, and beat the alarm trap.',
+      title: 'Stage 1 · Switches & Traps',
+      subtitle: 'Missions 01–05 · Trace the Circuit Map, dodge short circuits, and beat the siren trap.',
     },
     {
       num: 2 as const,
-      title: 'Stage 2 · Using the Pocket Meter',
-      subtitle: 'Missions 06–08 · Pocket Meter unlocked — check Volts and Amps, turn Resistance Dials, and protect the 5 A fuse.',
+      title: 'Stage 2 · Checking Volts & Amps',
+      subtitle: 'Missions 06–08 · Use Check Zones to read Volts & Amps, dial VR1, and save the 5 A fuse.',
     },
     {
       num: 3 as const,
-      title: 'Stage 3 · Heat, One-Way Diodes & Final Box',
-      subtitle: 'Missions 09–10 · Cool down a hot box, crack one-way diodes, and unlock the 2-sided final challenge.',
+      title: 'Stage 3 · Heat, Diodes & Final Boss',
+      subtitle: 'Missions 09–10 · Cool down the hot box, crack one-way diodes, and beat the final switchboard.',
     },
   ];
 
@@ -82,7 +82,7 @@ export const MissionHub: React.FC<MissionHubProps> = ({
               Read the map. Beat the clock. Disarm the box.
             </h1>
             <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300 leading-relaxed max-w-2xl">
-              Each box is packed with coloured wire bundles and labelled switches (<span className="font-mono font-bold">S1–S8</span>). Use your printed Circuit Map to flip the right switches, crack secret keypad codes, and clear all ten missions before the red timer hits zero.
+              Use your printed Circuit Map to flip the right switches (<span className="font-mono font-bold">S1–S8</span>), unlock sub-panels, and disarm all ten circuits before time runs out.
             </p>
             <div className="pt-2 flex flex-wrap items-center gap-4">
               <button
@@ -247,13 +247,15 @@ export const MissionHub: React.FC<MissionHubProps> = ({
                   {opLevels.map((lvl) => {
                     const isDone = completedSet.has(lvl.id);
                     const secs = computeLevelSeconds(lvl.standardSeconds, confidenceTier);
-                    const gear: string[] = [`${lvl.switches.length} switches`];
-                    if (lvl.hardwarePanels && lvl.hardwarePanels.length > 1) gear.push('2-Sided Box');
-                    if (lvl.multimeterEnabled) gear.push('Pocket Meter');
-                    if (lvl.components.some((c) => c.type === 'rheostat')) gear.push('Resistance Dial');
+                    const gear: string[] = [
+                      lvl.panelStyle === 'switchboard' ? 'Switchboard' : 'Wired Bay',
+                      `${lvl.switches.length} switches`,
+                    ];
+                    if (lvl.checkZones && lvl.checkZones.length > 0) gear.push('Check V/A');
+                    if (lvl.components.some((c) => c.type === 'rheostat')) gear.push('Dial VR1');
                     if (lvl.components.some((c) => c.type === 'fuse')) gear.push('5 A Fuse');
                     if (lvl.thermalEnabled) gear.push('Heat Gauge');
-                    if (lvl.components.some((c) => c.type === 'diode')) gear.push('One-Way Diodes');
+                    if (lvl.components.some((c) => c.type === 'diode')) gear.push('Diodes');
 
                     return (
                       <button

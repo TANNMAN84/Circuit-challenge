@@ -23,14 +23,9 @@ interface HardwarePanelSvgProps {
   faultState: FaultState;
   showViBadges: boolean;
   isDark: boolean;
-  /** Multimeter interaction props (Levels 6-10) */
-  multimeterMode?: 'V' | 'A';
-  redNodeId?: string | null;
-  blackNodeId?: string | null;
-  clampComponentId?: string | null;
-  activeProbeSelection?: 'red' | 'black' | 'clamp' | null;
-  onSelectTestPoint?: (nodeId: string) => void;
-  onSelectShunt?: (componentId: string) => void;
+  /** Inline Check Zone interaction props (Levels 6–10) */
+  activeCheckZoneIds?: string[];
+  onToggleCheckZone?: (zoneId: string) => void;
   onToggleSwitch: (switchId: string) => void;
   onChangeRheostat: (componentId: string, ohms: number) => void;
   onOpenHatch: (hatch: CircuitHatch) => void;
@@ -116,13 +111,8 @@ export const HardwarePanelSvg: React.FC<HardwarePanelSvgProps> = ({
   faultState,
   showViBadges,
   isDark,
-  multimeterMode,
-  redNodeId,
-  blackNodeId,
-  clampComponentId,
-  activeProbeSelection,
-  onSelectTestPoint,
-  onSelectShunt,
+  activeCheckZoneIds = [],
+  onToggleCheckZone,
   onToggleSwitch,
   onChangeRheostat,
   onOpenHatch,
@@ -198,8 +188,9 @@ export const HardwarePanelSvg: React.FC<HardwarePanelSvgProps> = ({
   const tagBg = '#0f172a';
   const tagText = '#f8fafc';
 
-  const isVoltmeterMode = level.multimeterEnabled && multimeterMode === 'V';
-  const isAmmeterMode = level.multimeterEnabled && multimeterMode === 'A';
+  const activeZoneSet = new Set(activeCheckZoneIds);
+  const voltZones = (level.checkZones ?? []).filter((z) => z.kind === 'V');
+  const ampZones = (level.checkZones ?? []).filter((z) => z.kind === 'A');
 
   // Cable-bus anchor point for cross-panel wires (right edge on Front Panel, left edge on Back Panel)
   const crossPanelBusX = isBackPanel ? 52 : 812;
@@ -435,61 +426,35 @@ export const HardwarePanelSvg: React.FC<HardwarePanelSvgProps> = ({
         </g>
       ))}
 
-      {/* Yellow Voltage Test Pins (TP1, TP2, TP3) — Voltmeter (V) Mode */}
+      {/* Yellow Voltage Check Pins (TP1, TP2...) — Always 1-tap clickable */}
       {level.multimeterEnabled &&
         visibleTestNodes.map((node) => {
           const pt = node.physicalTestPoint!;
-          const isRed = redNodeId === node.id;
-          const isBlack = blackNodeId === node.id;
-          const highlight = isVoltmeterMode;
+          const matchingZone = voltZones.find(
+            (z) => z.nodeA === node.id || z.nodeB === node.id,
+          );
+          const isActive = matchingZone ? activeZoneSet.has(matchingZone.id) : false;
+          const isHighlighted = Boolean(matchingZone?.highlight && !isActive);
 
           return (
             <g
               key={node.id}
               transform={`translate(${pt.x}, ${pt.y})`}
-              onClick={() => isVoltmeterMode && onSelectTestPoint?.(node.id)}
-              className={isVoltmeterMode ? 'cursor-pointer' : 'cursor-default'}
+              onClick={() => matchingZone && onToggleCheckZone?.(matchingZone.id)}
+              className="cursor-pointer"
               data-test-point={node.id}
             >
-              {/* Clear clickable halo in Volts mode */}
-              {highlight && (
+              {(isHighlighted || isActive) && (
                 <circle
                   r={21}
-                  fill={
-                    isRed
-                      ? 'rgba(220,38,38,0.22)'
-                      : isBlack
-                        ? 'rgba(15,23,42,0.24)'
-                        : activeProbeSelection === 'red'
-                          ? 'rgba(245,158,11,0.16)'
-                          : 'rgba(245,158,11,0.16)'
-                  }
-                  stroke={isRed ? '#dc2626' : isBlack ? '#0f172a' : '#f59e0b'}
-                  strokeWidth={isRed || isBlack ? 3 : 1.8}
-                  strokeDasharray={isRed || isBlack ? undefined : '4 2.5'}
+                  fill={isActive ? 'rgba(245,158,11,0.28)' : 'rgba(245,158,11,0.14)'}
+                  stroke="#f59e0b"
+                  strokeWidth={isActive ? 3 : 2}
+                  strokeDasharray={isActive ? undefined : '4 2.5'}
                 />
               )}
-              {/* Brass Volt Pin */}
               <circle r={12} fill="#f59e0b" stroke="#78350f" strokeWidth={1.8} />
               <circle r={5.5} fill="#fef3c7" stroke="#92400e" strokeWidth={1.2} />
-
-              {/* Crisp Probe Marker Badge (+ RED or - BLK) right on the pin (zero messy leads!) */}
-              {isRed && (
-                <g transform="translate(13, -13)">
-                  <circle r={8} fill="#dc2626" stroke="#ffffff" strokeWidth={1.8} />
-                  <text y={3.5} textAnchor="middle" fontSize={11} fontWeight={800} fill="#ffffff" fontFamily="IBM Plex Mono, monospace">
-                    +
-                  </text>
-                </g>
-              )}
-              {isBlack && (
-                <g transform="translate(-13, -13)">
-                  <circle r={8} fill="#0f172a" stroke="#ffffff" strokeWidth={1.8} />
-                  <text y={3.5} textAnchor="middle" fontSize={11} fontWeight={800} fill="#ffffff" fontFamily="IBM Plex Mono, monospace">
-                    −
-                  </text>
-                </g>
-              )}
 
               <rect x={-19} y={14} width={38} height={16} rx={4} fill={tagBg} />
               <text
@@ -507,42 +472,89 @@ export const HardwarePanelSvg: React.FC<HardwarePanelSvgProps> = ({
           );
         })}
 
-      {/* Blue Inline Amp Clips (A0, A1, A2...) — Ammeter (A) Mode */}
+      {/* Inline Voltage LCD Pill between Active TP Pair */}
+      {level.multimeterEnabled &&
+        voltZones
+          .filter((z) => activeZoneSet.has(z.id) && z.nodeA && z.nodeB)
+          .map((z) => {
+            const nA = visibleTestNodes.find((n) => n.id === z.nodeA);
+            const nB = visibleTestNodes.find((n) => n.id === z.nodeB);
+            if (!nA?.physicalTestPoint || !nB?.physicalTestPoint) return null;
+            const mx = (nA.physicalTestPoint.x + nB.physicalTestPoint.x) / 2;
+            const my = (nA.physicalTestPoint.y + nB.physicalTestPoint.y) / 2;
+            const delta = Math.abs(
+              (solution.nodeVoltages[z.nodeA!] ?? 0) -
+                (solution.nodeVoltages[z.nodeB!] ?? 0),
+            );
+            return (
+              <g
+                key={`vlcd-${z.id}`}
+                transform={`translate(${mx}, ${my})`}
+                onClick={() => onToggleCheckZone?.(z.id)}
+                className="cursor-pointer"
+              >
+                <rect
+                  x={-36}
+                  y={-13}
+                  width={72}
+                  height={26}
+                  rx={6}
+                  fill="#d8e8d3"
+                  stroke="#f59e0b"
+                  strokeWidth={2.2}
+                />
+                <text
+                  x={0}
+                  y={4.5}
+                  textAnchor="middle"
+                  fontSize={12}
+                  fontWeight={800}
+                  fontFamily="IBM Plex Mono, monospace"
+                  fill="#0f172a"
+                >
+                  {delta.toFixed(2)} V
+                </text>
+              </g>
+            );
+          })}
+
+      {/* Blue Inline Amp Check Points (A1, A2...) — Always 1-tap clickable */}
       {level.multimeterEnabled &&
         visibleShuntComps.map((comp) => {
           const pt = comp.physicalShunt!;
-          const isClamped = clampComponentId === comp.id;
-          const highlight = isAmmeterMode;
+          const matchingZone = ampZones.find((z) => z.componentId === comp.id);
+          const isActive = matchingZone ? activeZoneSet.has(matchingZone.id) : false;
+          const isHighlighted = Boolean(matchingZone?.highlight && !isActive);
           const liveAmps = Math.abs(solution.branches[comp.id]?.currentAmps ?? 0);
 
           return (
             <g
               key={`shunt-${comp.id}`}
               transform={`translate(${pt.x}, ${pt.y})`}
-              onClick={() => isAmmeterMode && onSelectShunt?.(comp.id)}
-              className={isAmmeterMode ? 'cursor-pointer' : 'cursor-default'}
+              onClick={() => matchingZone && onToggleCheckZone?.(matchingZone.id)}
+              className="cursor-pointer"
               data-shunt-point={comp.id}
             >
-              {highlight && (
+              {(isHighlighted || isActive) && (
                 <rect
-                  x={-24}
+                  x={-25}
                   y={-20}
-                  width={48}
+                  width={50}
                   height={40}
                   rx={8}
-                  fill={isClamped ? 'rgba(2,132,199,0.26)' : 'rgba(2,132,199,0.12)'}
+                  fill={isActive ? 'rgba(2,132,199,0.26)' : 'rgba(2,132,199,0.14)'}
                   stroke="#0284c7"
-                  strokeWidth={isClamped ? 3 : 1.8}
-                  strokeDasharray={isClamped ? undefined : '4 2.5'}
+                  strokeWidth={isActive ? 3 : 2}
+                  strokeDasharray={isActive ? undefined : '4 2.5'}
                 />
               )}
               <rect
-                x={-16}
+                x={-17}
                 y={-12}
-                width={32}
+                width={34}
                 height={24}
                 rx={5}
-                fill={isClamped ? '#0284c7' : isDark ? '#1e293b' : '#ffffff'}
+                fill={isActive ? '#0284c7' : isDark ? '#1e293b' : '#ffffff'}
                 stroke="#0284c7"
                 strokeWidth={2.2}
               />
@@ -553,21 +565,47 @@ export const HardwarePanelSvg: React.FC<HardwarePanelSvgProps> = ({
                 fontSize={11}
                 fontWeight={800}
                 fontFamily="IBM Plex Mono, monospace"
-                fill={isClamped ? '#ffffff' : isDark ? '#7dd3fc' : '#0369a1'}
+                fill={isActive ? '#ffffff' : isDark ? '#7dd3fc' : '#0369a1'}
               >
                 {comp.shuntLabel}
               </text>
-              <text
-                x={0}
-                y={24}
-                textAnchor="middle"
-                fontSize={8.5}
-                fontWeight={700}
-                fontFamily="IBM Plex Mono, monospace"
-                fill={isClamped ? '#38bdf8' : silkscreen}
-              >
-                {isClamped ? `${liveAmps.toFixed(2)} A` : 'AMP CLIP'}
-              </text>
+              {isActive ? (
+                <g transform="translate(0, 26)">
+                  <rect
+                    x={-28}
+                    y={-10}
+                    width={56}
+                    height={19}
+                    rx={4}
+                    fill="#d8e8d3"
+                    stroke="#0284c7"
+                    strokeWidth={1.6}
+                  />
+                  <text
+                    x={0}
+                    y={3.5}
+                    textAnchor="middle"
+                    fontSize={10.5}
+                    fontWeight={800}
+                    fontFamily="IBM Plex Mono, monospace"
+                    fill="#0f172a"
+                  >
+                    {liveAmps.toFixed(2)} A
+                  </text>
+                </g>
+              ) : (
+                <text
+                  x={0}
+                  y={24}
+                  textAnchor="middle"
+                  fontSize={8.5}
+                  fontWeight={700}
+                  fontFamily="IBM Plex Mono, monospace"
+                  fill={isHighlighted ? '#38bdf8' : silkscreen}
+                >
+                  CHECK A
+                </text>
+              )}
             </g>
           );
         })}

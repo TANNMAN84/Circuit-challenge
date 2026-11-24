@@ -59,7 +59,7 @@ export const KeypadModal: React.FC<KeypadModalProps> = ({ hatch, onUnlock, onClo
       }
     } else {
       soundEngine.playErrorBuzz();
-      setErrorMsg('WRONG CODE — check your circuit map or Pocket Meter and try again.');
+      setErrorMsg('WRONG CODE — check your Circuit Map or Check Zones and try again.');
       setDigits('');
     }
   };
