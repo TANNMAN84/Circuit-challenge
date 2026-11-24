@@ -39,7 +39,7 @@ export const KeypadModal: React.FC<KeypadModalProps> = ({ hatch, onUnlock, onClo
 
   const handleSubmit = () => {
     if (digits.length < 3) {
-      setErrorMsg('Enter all 3 digits (include leading zeros, e.g. 006).');
+      setErrorMsg('Enter all 3 digits (include leading zeros).');
       soundEngine.playErrorBuzz();
       return;
     }

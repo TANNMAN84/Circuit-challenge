@@ -21,8 +21,8 @@ import { CheckZoneBar } from './components/CheckZoneBar';
 import { SchematicSvg } from './components/SchematicSvg';
 import { RetroDigitalClock } from './components/RetroDigitalClock';
 import { KeypadModal } from './components/KeypadModal';
-import { TeacherPinModal, TeacherToolbar } from './components/TeacherPinModal';
-import { PrintWorksheet } from './components/PrintWorksheet';
+import { BulkPrintModal, TeacherPinModal, TeacherToolbar } from './components/TeacherPinModal';
+import { PrintWorksheet, buildStandaloneWorksheetHtml } from './components/PrintWorksheet';
 import {
   AlertTriangle,
   ArrowRight,
@@ -131,11 +131,17 @@ export default function App() {
   const [muted, setMuted] = useState(false);
   const [teacherUnlocked, setTeacherUnlocked] = useState(false);
   const [pinModalOpen, setPinModalOpen] = useState(false);
-  const [showViBadges, setShowViBadges] = useState(false);
+  const [bulkPrintModalOpen, setBulkPrintModalOpen] = useState(false);
+  const [bulkPrintJob, setBulkPrintJob] = useState<{
+    includeAnswerKeys: boolean;
+    bulkLayout: 'grouped' | 'paired';
+  } | null>(null);
+  const [showViBadges, setShowViBadges] = useState(true);
   const [paperOnlyMode, setPaperOnlyMode] = useState(false);
   const [timerPaused, setTimerPaused] = useState(false);
   const [schematicDrawerOpen, setSchematicDrawerOpen] = useState(false);
   const [shakeTrigger, setShakeTrigger] = useState(0);
+  const printWorksheetRef = useRef<HTMLDivElement | null>(null);
 
   // Active level electrical & interactive state
   const activeLevel = useMemo(
@@ -491,7 +497,62 @@ export default function App() {
   };
 
   const handlePrintWorksheet = () => {
-    window.print();
+    setBulkPrintJob(null);
+    window.setTimeout(() => window.print(), 30);
+  };
+
+  const handleBulkPrint = (
+    includeAnswerKeys: boolean,
+    bulkLayout: 'grouped' | 'paired',
+  ) => {
+    setBulkPrintModalOpen(false);
+    setBulkPrintJob({ includeAnswerKeys, bulkLayout });
+
+    const cleanup = () => {
+      setBulkPrintJob(null);
+      window.removeEventListener('afterprint', cleanup);
+    };
+    window.addEventListener('afterprint', cleanup);
+
+    window.setTimeout(() => {
+      window.print();
+    }, 80);
+  };
+
+  const handleBulkDownload = (
+    includeAnswerKeys: boolean,
+    bulkLayout: 'grouped' | 'paired',
+  ) => {
+    setBulkPrintModalOpen(false);
+    setBulkPrintJob({ includeAnswerKeys, bulkLayout });
+
+    window.setTimeout(() => {
+      const container = printWorksheetRef.current;
+      if (container) {
+        const meta = SCENARIOS[scenario];
+        const pageCount = includeAnswerKeys ? LEVELS.length * 2 : LEVELS.length;
+        const docTitle = includeAnswerKeys
+          ? `Circuit Disarm — All 10 Circuit Maps & Teacher Answer Keys (${meta.name})`
+          : `Circuit Disarm — All 10 Student Circuit Maps & Questions (${meta.name})`;
+        const html = buildStandaloneWorksheetHtml(
+          container.innerHTML,
+          docTitle,
+          pageCount,
+        );
+        const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = includeAnswerKeys
+          ? `circuit-disarm-all-10-maps-with-keys-${scenario}.html`
+          : `circuit-disarm-all-10-student-maps-${scenario}.html`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+      setBulkPrintJob(null);
+    }, 80);
   };
 
   const scenarioMeta = SCENARIOS[scenario];
@@ -618,15 +679,15 @@ export default function App() {
               onClick={() => {
                 if (teacherUnlocked) {
                   setTeacherUnlocked(false);
-                  setShowViBadges(false);
                   setPaperOnlyMode(false);
                   setTimerPaused(false);
+                  setBulkPrintModalOpen(false);
                 } else {
                   setPinModalOpen(true);
                 }
               }}
               aria-label={teacherUnlocked ? 'Lock Teacher Mode' : 'Unlock Teacher Mode'}
-              title={teacherUnlocked ? 'Teacher Mode Unlocked (click to lock)' : 'Teacher Mode PIN'}
+              title={teacherUnlocked ? 'Teacher Mode Active (click to lock)' : 'Teacher Mode'}
               className={`p-2 rounded-lg transition-colors ${
                 teacherUnlocked
                   ? 'bg-amber-400/30 text-amber-900 dark:text-amber-300'
@@ -669,12 +730,13 @@ export default function App() {
             });
           }}
           onTogglePauseTimer={() => setTimerPaused((p) => !p)}
+          onOpenBulkPrint={() => setBulkPrintModalOpen(true)}
           onUpdatePin={handleUpdatePin}
           onLockTeacher={() => {
             setTeacherUnlocked(false);
-            setShowViBadges(false);
             setPaperOnlyMode(false);
             setTimerPaused(false);
+            setBulkPrintModalOpen(false);
           }}
         />
       )}
@@ -1142,7 +1204,7 @@ export default function App() {
         />
       )}
 
-      {/* Teacher Mode PIN Modal */}
+      {/* Teacher Mode Access Code Modal */}
       {pinModalOpen && (
         <TeacherPinModal
           storedPin={teacherPin}
@@ -1154,14 +1216,28 @@ export default function App() {
         />
       )}
 
+      {/* Teacher Mode Bulk Print / Download All 10 Modal */}
+      {bulkPrintModalOpen && teacherUnlocked && (
+        <BulkPrintModal
+          scenario={scenario}
+          onBulkPrint={handleBulkPrint}
+          onBulkDownload={handleBulkDownload}
+          onClose={() => setBulkPrintModalOpen(false)}
+        />
+      )}
+
       {/* ================================================================= */}
       {/* MONOCHROME A4 PRINT WORKSHEET LAYER (@media print ONLY)           */}
       {/* ================================================================= */}
-      {activeLevel && (
+      {(bulkPrintJob || activeLevel) && (
         <PrintWorksheet
-          level={activeLevel}
+          ref={printWorksheetRef}
+          levels={bulkPrintJob ? LEVELS : activeLevel ? [activeLevel] : []}
           scenario={scenario}
-          includeTeacherAnswerKey={teacherUnlocked}
+          includeTeacherAnswerKey={
+            bulkPrintJob ? bulkPrintJob.includeAnswerKeys : teacherUnlocked
+          }
+          bulkLayout={bulkPrintJob ? bulkPrintJob.bulkLayout : 'paired'}
         />
       )}
     </div>

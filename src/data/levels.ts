@@ -495,8 +495,8 @@ export const LEVELS: LevelDefinition[] = [
             code: '001',
             title: 'Parallel Paths Check',
             prompt:
-              'In this parallel circuit, if you turn switch S4 OFF to shut down the Warning Light, do the Fan and Green Light STILL stay ON? Enter 001 for YES or 000 for NO.',
-            formulaHint: 'Tip: Each parallel path connects straight to the 12 V battery on its own.',
+              'In this parallel circuit, if you switch OFF the Warning Light’s branch, do the Fan and Green Light STILL stay ON? Enter 001 for YES or 000 for NO.',
+            formulaHint: 'Tip: Trace how each parallel branch connects back to the 12 V battery.',
             syllabusNote: 'NSW Stage 5 PW3a / PW3c — Parallel circuit properties',
           },
         ],
@@ -510,10 +510,10 @@ export const LEVELS: LevelDefinition[] = [
     worksheet: {
       syllabusOutcome: 'SC5-11PW / PW3a, PW3c — Independent parallel branches',
       keypadSummary:
-        'Hatch 1 Code: If S4 turns OFF in a parallel circuit, do the other paths stay ON? (001 = YES, 000 = NO).',
+        'Hatch 1 Code: If you turn OFF the Warning Light’s branch in a parallel circuit, do the other paths stay ON? (001 = YES, 000 = NO).',
       questions: [
-        'What happens to ALL three parts if you turn OFF main switch S1 instead of side switch S4?',
-        'How many Volts do the Cooling Fan (M1) and Green Light (LED1) each get when S1, S2, and S3 are ON?',
+        'What happens to ALL three parts if you turn OFF the main battery switch instead of the Warning Light’s own switch?',
+        'How many Volts do the Cooling Fan (M1) and Green Light (LED1) each get when the main switch and their branch switches are ON?',
         'Why are lights in a house wired in parallel instead of all in one single loop?',
       ],
       answerKey: {
@@ -834,8 +834,8 @@ export const LEVELS: LevelDefinition[] = [
             code: '003',
             title: 'Count the Safe ON Switches',
             prompt:
-              'Check your circuit map so you do NOT flip the short-circuit trap (S3). How many switches in total need to be ON to safely light up Beacons A & B while keeping the Relay OFF? Enter 3 digits.',
-            formulaHint: 'Tip: Count the switches that must be ON (leave S3 and S5 OFF!).',
+              'Check your Circuit Map to avoid the short-circuit trap. How many switches in total need to be ON to safely light up Beacons A & B while keeping the Relay OFF? Enter 3 digits with leading zeros.',
+            formulaHint: 'Trace every safe path on your Circuit Map and count how many switches must be ON.',
             syllabusNote: 'NSW Stage 5 PW3a / PW3c — Short-circuit prevention',
           },
         ],
@@ -849,9 +849,9 @@ export const LEVELS: LevelDefinition[] = [
     worksheet: {
       syllabusOutcome: 'SC5-11PW / PW3a, PW3c — Identifying and preventing short circuits',
       keypadSummary:
-        'Hatch 1 Code: How many switches need to be ON to finish safely without flipping trap switch S3? Enter 3 digits.',
+        'Hatch 1 Code: How many switches need to be ON to finish safely without flipping the short-circuit trap? Enter 3 digits.',
       questions: [
-        'Why does turning ON switch S3 (while S1 is ON) cause a short circuit?',
+        'Which switch is the short-circuit trap, and why does closing it trip the breaker?',
         'If a wire connects + to − with almost zero resistance, what happens to the current?',
         'Which two switches must stay OFF at the end of Mission 3?',
       ],
@@ -1232,7 +1232,7 @@ export const LEVELS: LevelDefinition[] = [
             code: '002',
             title: 'Find the Shared Switch',
             prompt:
-              'Look at your circuit map above the Pump (M1) and Alarm Horn (BZ1). Which single switch number (S1–S6) feeds power to BOTH M1 and BZ1? Enter 3 digits (like 002 for S2).',
+              'Look at your Circuit Map above the Pump (M1) and Alarm Horn (BZ1). Which single switch number (S1–S6) feeds power to BOTH M1 and BZ1? Enter the switch number as 3 digits with leading zeros.',
             formulaHint: 'Tip: Follow the wire backwards from M1 and BZ1 until the two wires meet at one switch.',
             syllabusNote: 'NSW Stage 5 PW3a — Series-parallel branch hierarchy',
           },
@@ -1250,8 +1250,8 @@ export const LEVELS: LevelDefinition[] = [
       keypadSummary:
         'Hatch 1 Code: Which shared switch feeds power to BOTH the Pump (M1) and Alarm Horn (BZ1)? Enter 3 digits.',
       questions: [
-        'Why is it smart to turn switch S4 OFF before turning shared switch S2 ON?',
-        'How does switch S6 let you turn ON the Green Light (LED1) without turning ON the Igniter (K1)?',
+        'Why is it smart to switch OFF the Alarm Horn’s own switch before turning ON the shared switch above it?',
+        'How can you turn ON the Green Light (LED1) without turning ON the Igniter (K1)?',
         'Which switches are all in one line (in series) with the Pump (M1)?',
       ],
       answerKey: {
@@ -1734,7 +1734,7 @@ export const LEVELS: LevelDefinition[] = [
         componentId: 'SIREN1',
         title: 'TRAP TRIGGERED — SIREN WENT OFF!',
         detail:
-          'You turned ON shared switch S4 while S5 (on the Back Panel) was still ON, so power reached the Siren! Hit Reset, go to the Back Panel to turn S5 OFF first, then flip S4.',
+          'Power reached the Siren (BZ1)! Hit Reset, trace the Siren’s own branch switch on your Circuit Map, and switch it OFF before turning ON the shared trunk switch.',
       },
     ],
     winConditions: [
@@ -1750,7 +1750,7 @@ export const LEVELS: LevelDefinition[] = [
         'Hatch 1 Code: How many parts will be powered ON at the end of the mission? Enter 3 digits.',
       questions: [
         'Because S1 is stuck ON, how do you turn OFF the Danger Coil (K1) without turning OFF Green Light 1?',
-        'Why does turning S4 ON before turning S5 OFF set off the Siren trap?',
+        'Which two switches control the Siren (BZ1), and why does flipping them in the wrong order trigger the trap?',
         'Which three switches are in one line (series) with the Vent Fan (M1)?',
       ],
       answerKey: {
@@ -1793,9 +1793,9 @@ export const LEVELS: LevelDefinition[] = [
     ],
     standardSeconds: 240,
     briefings: {
-      forensic: 'Check the highlighted Volts zones (TP1–TP2 & TP2–TP3). Turn OFF the sensor over 5 V, unlock Hatch 1, and turn ON the safe 3 V sensor.',
-      rov: 'Check the highlighted Volts zones (TP1–TP2 & TP2–TP3). Turn OFF the sensor over 5 V, unlock Hatch 1, and turn ON the safe 3 V sensor.',
-      outback: 'Check the highlighted Volts zones (TP1–TP2 & TP2–TP3). Turn OFF the sensor over 5 V, unlock Hatch 1, and turn ON the safe 3 V sensor.',
+      forensic: 'Check the highlighted Volts zones (TP1–TP2 & TP2–TP3). Turn OFF any sensor over 5 V, unlock Hatch 1, and turn ON the safe sensor.',
+      rov: 'Check the highlighted Volts zones (TP1–TP2 & TP2–TP3). Turn OFF any sensor over 5 V, unlock Hatch 1, and turn ON the safe sensor.',
+      outback: 'Check the highlighted Volts zones (TP1–TP2 & TP2–TP3). Turn OFF any sensor over 5 V, unlock Hatch 1, and turn ON the safe sensor.',
     },
     debriefNote: 'Resistors in series share the 9 V battery: 3 V across 10 Ω + 6 V across 20 Ω = 9 V.',
     nodes: [
@@ -2130,9 +2130,9 @@ export const LEVELS: LevelDefinition[] = [
         maxVoltageVolts: 5.0,
         ledColour: 'green',
         scenarioLabels: {
-          forensic: 'Safe 3 V Sensor',
-          rov: 'Safe 3 V Sensor',
-          outback: 'Safe 3 V Sensor',
+          forensic: 'Sensor A (5 V Max)',
+          rov: 'Sensor A (5 V Max)',
+          outback: 'Sensor A (5 V Max)',
         },
         schematic: { x: 485, y: 162, orientation: 'vertical' },
         physical: { x: 225, y: 415 },
@@ -2148,9 +2148,9 @@ export const LEVELS: LevelDefinition[] = [
         maxVoltageVolts: 5.0,
         ledColour: 'red',
         scenarioLabels: {
-          forensic: 'Over-Volt Sensor (6 V)',
-          rov: 'Over-Volt Sensor (6 V)',
-          outback: 'Over-Volt Sensor (6 V)',
+          forensic: 'Sensor B (5 V Max)',
+          rov: 'Sensor B (5 V Max)',
+          outback: 'Sensor B (5 V Max)',
         },
         schematic: { x: 485, y: 288, orientation: 'vertical' },
         physical: { x: 445, y: 415 },
@@ -2200,7 +2200,7 @@ export const LEVELS: LevelDefinition[] = [
             code: '006',
             title: 'Voltage Across R2',
             prompt:
-              'Tap Check V: TP2–TP3 on the switchboard to measure Volts across R2 (20 Ω). Enter the Volts as 3 digits (like 006).',
+              'Tap Check V: TP2–TP3 on the switchboard to measure Volts across R2 (20 Ω). Enter the Volts as 3 digits with leading zeros.',
             formulaHint: 'Tap the highlighted TP2–TP3 check button!',
             syllabusNote: 'NSW Stage 5 PW3c — Voltage division in series circuits',
           },
@@ -2216,11 +2216,11 @@ export const LEVELS: LevelDefinition[] = [
     worksheet: {
       syllabusOutcome: 'SC5-11PW / PW3c — Measuring voltage division in series circuits',
       keypadSummary:
-        'Hatch 1 Code: Measure the Volts across R2 (between TP2 and TP3) using VOLTS (V) mode. Enter 3 digits.',
+        'Hatch 1 Code: Measure the Volts across R2 (between TP2 and TP3). Enter 3 digits.',
       questions: [
-        'Add R1 (10 Ω) + R2 (20 Ω) to find the total resistance, then use I = V / R to find the current at clip A1.',
-        'Check how many Volts are across R1 and across R2. Do they add up to the 9 V battery?',
-        'Why must you turn OFF Sensor B (6 V) while Sensor A (3 V) is safe to keep ON?',
+        'Add R1 (10 Ω) + R2 (20 Ω) to find the total resistance, then use I = V / R to find the current at Check A1.',
+        'Check how many Volts are across R1 and across R2. Do they add up to the battery voltage?',
+        'Which sensor gets more than 5 V and must be turned OFF, and why is the other sensor safe to keep ON?',
       ],
       answerKey: {
         switchStates: { S1: 'CLOSED', S2: 'CLOSED', S3: 'OPEN', S4: 'CLOSED', S5: 'OPEN' },
@@ -2557,7 +2557,7 @@ export const LEVELS: LevelDefinition[] = [
             code: '012',
             title: 'Battery Voltage',
             prompt:
-              'Tap Check V: TP1–TP2 to measure the battery Volts. Enter as 3 digits (like 012).',
+              'Tap Check V: TP1–TP2 to measure the battery Volts. Enter as 3 digits with leading zeros.',
             formulaHint: 'Tap the highlighted TP1–TP2 check button!',
             syllabusNote: 'NSW Stage 5 PW3b — Measure V first, then calculate R = V / I independently',
           },
@@ -2580,9 +2580,9 @@ export const LEVELS: LevelDefinition[] = [
       keypadSummary:
         'Hatch 1 Code: Measure battery Volts between TP1 and TP2 (enter 3 digits). Then work out R = V ÷ I to set Dial VR1.',
       questions: [
-        'Use R = V ÷ I to work out what Ohm setting on Dial VR1 gives 0.40 A from the 12 V battery.',
+        'Using your measured battery Volts and R = V ÷ I, work out what Ohm setting on Dial VR1 gives 0.40 A.',
         'At what low resistance does the current go over 0.50 A and burn out the coil?',
-        'Why is it safer to set Dial VR1 BEFORE flipping switches S3 and S4 ON?',
+        'Why is it safer to set Dial VR1 BEFORE switching ON the coil’s branch?',
       ],
       answerKey: {
         switchStates: { S1: 'CLOSED', S2: 'OPEN', S3: 'CLOSED', S4: 'CLOSED' },
@@ -2934,7 +2934,7 @@ export const LEVELS: LevelDefinition[] = [
       },
       {
         id: 'LAMP1',
-        code: 'L1 (1.5A)',
+        code: 'L1',
         type: 'lamp',
         nodeA: 'l1_a',
         nodeB: 'l1_b',
@@ -2944,16 +2944,16 @@ export const LEVELS: LevelDefinition[] = [
         physicalShunt: { x: 545, y: 208 },
         schematicShunt: { x: 320, y: 220 },
         scenarioLabels: {
-          forensic: 'Extra Light (1.5 A)',
-          rov: 'Extra Light (1.5 A)',
-          outback: 'Yard Light (1.5 A)',
+          forensic: 'Extra Light',
+          rov: 'Extra Light',
+          outback: 'Yard Light',
         },
         schematic: { x: 320, y: 282, orientation: 'vertical' },
         physical: { x: 465, y: 415 },
       },
       {
         id: 'LAMP2',
-        code: 'L2 (2.0A)',
+        code: 'L2',
         type: 'lamp',
         nodeA: 'l2_a',
         nodeB: 'l2_b',
@@ -2963,9 +2963,9 @@ export const LEVELS: LevelDefinition[] = [
         physicalShunt: { x: 670, y: 208 },
         schematicShunt: { x: 445, y: 220 },
         scenarioLabels: {
-          forensic: 'Extra Heater (2.0 A)',
-          rov: 'Cabin Heater (2.0 A)',
-          outback: 'Extra Heater (2.0 A)',
+          forensic: 'Extra Heater',
+          rov: 'Cabin Heater',
+          outback: 'Extra Heater',
         },
         schematic: { x: 445, y: 282, orientation: 'vertical' },
         physical: { x: 665, y: 415 },
@@ -3020,8 +3020,8 @@ export const LEVELS: LevelDefinition[] = [
             code: '060',
             title: 'Add Up the Currents',
             prompt:
-              'Check A1 (1.5 A) and A2 (2.0 A). If you added the 2.5 A Pump while both were ON, what total Amps would hit F1? Enter 6.0 as 060.',
-            formulaHint: '1.5 + 2.0 + 2.5 = ? (enter without the dot, e.g. 060)',
+              'Check A1 and A2 on the switchboard. If you turned ON the 2.5 A Pump while both extra loads stayed ON, what total Amps would hit F1? Enter 3 digits with a leading zero and no decimal point.',
+            formulaHint: 'Add all 3 parallel branch currents (A1 + A2 + 2.5 A), then drop the decimal point and pad to 3 digits.',
             syllabusNote: 'NSW Stage 5 PW3c — Summation of parallel branch currents',
           },
         ],
@@ -3036,11 +3036,11 @@ export const LEVELS: LevelDefinition[] = [
     worksheet: {
       syllabusOutcome: 'SC5-11PW / PW3c — Parallel current summation & fuse protection',
       keypadSummary:
-        'Hatch 1 Code: Add up L1 (1.5 A) + L2 (2.0 A) + M1 (2.5 A). Enter 6.0 A as 060.',
+        'Hatch 1 Code: Add up the currents of L1, L2, and the 2.5 A Pump (M1). Enter total Amps as 3 digits with no decimal point.',
       questions: [
-        'How many Amps flow through safety fuse F1 at the start when L1 (1.5 A) and L2 (2.0 A) are both ON?',
+        'How many Amps flow through safety fuse F1 at the start when L1 and L2 are both ON?',
         'Why does turning ON the 2.5 A Pump BEFORE turning OFF L1 or L2 blow the 5.0 A fuse?',
-        'How many Amps flow through fuse F1 at the end when only the Pump (2.5 A) and Beacon (1.0 A) are ON?',
+        'How many Amps flow through fuse F1 at the end when only the Pump and Beacon are ON?',
       ],
       answerKey: {
         switchStates: {
@@ -3432,7 +3432,7 @@ export const LEVELS: LevelDefinition[] = [
             code: '020',
             title: 'Energy Efficiency Code',
             prompt:
-              'A light uses 120 J of electricity and makes 24 J of useful light (the rest is wasted as heat). What percentage is useful light? Enter as 3 digits (like 020).',
+              'A light uses 120 J of electricity and makes 24 J of useful light (the rest is wasted as heat). What percentage is useful light? Enter as 3 digits with leading zeros.',
             formulaHint: 'Useful % = (24 ÷ 120) × 100',
             syllabusNote: 'NSW Stage 5 PW4a / PW4b — Energy transfers and efficiency',
           },
@@ -3484,9 +3484,9 @@ export const LEVELS: LevelDefinition[] = [
     ],
     standardSeconds: 360,
     briefings: {
-      forensic: 'S1 is stuck OFF! Route power through diode D1, cut D2 to stop the Siren, unlock Hatch 1 (check A1 & TP1–TP2), and dial VR1 so A2 reads 0.36–0.44 A.',
-      rov: 'S1 is stuck OFF! Route power through diode D1, cut D2 to stop the Alarm, unlock Hatch 1 (check A1 & TP1–TP2), and dial VR1 so A2 reads 0.36–0.44 A.',
-      outback: 'S1 is stuck OFF! Route power through diode D1, cut D2 to stop the Siren, unlock Hatch 1 (check A1 & TP1–TP2), and dial VR1 so A2 reads 0.36–0.44 A.',
+      forensic: 'S1 is stuck OFF! Find a safe path to power LED1, silence the Siren, unlock Hatch 1 (check A1 & TP1–TP2), and dial VR1 so A2 reads 0.36–0.44 A.',
+      rov: 'S1 is stuck OFF! Find a safe path to power LED1, silence the Alarm, unlock Hatch 1 (check A1 & TP1–TP2), and dial VR1 so A2 reads 0.36–0.44 A.',
+      outback: 'S1 is stuck OFF! Find a safe path to power LED1, silence the Siren, unlock Hatch 1 (check A1 & TP1–TP2), and dial VR1 so A2 reads 0.36–0.44 A.',
     },
     debriefNote: 'Final Boss cleared! You routed around stuck S1 with diodes, cut the side-path, and nailed R = V ÷ I.',
     nodes: [
@@ -3906,9 +3906,9 @@ export const LEVELS: LevelDefinition[] = [
         nodeA: 'd1_a',
         nodeB: 'd1_b',
         scenarioLabels: {
-          forensic: 'One-Way Gate D1',
-          rov: 'One-Way Gate D1',
-          outback: 'One-Way Gate D1',
+          forensic: 'Diode D1',
+          rov: 'Diode D1',
+          outback: 'Diode D1',
         },
         schematic: { x: 235, y: 200, orientation: 'vertical' },
         physical: { x: 240, y: 415 },
@@ -3920,9 +3920,9 @@ export const LEVELS: LevelDefinition[] = [
         nodeA: 'd2_a',
         nodeB: 'd2_b',
         scenarioLabels: {
-          forensic: 'Side-Path Diode D2',
-          rov: 'Side-Path Diode D2',
-          outback: 'Side-Path Diode D2',
+          forensic: 'Diode D2',
+          rov: 'Diode D2',
+          outback: 'Diode D2',
         },
         schematic: { x: 280, y: 245, orientation: 'horizontal' },
         physical: { x: 560, y: 415 },
@@ -3937,9 +3937,9 @@ export const LEVELS: LevelDefinition[] = [
         physicalShunt: { x: 220, y: 208 },
         schematicShunt: { x: 505, y: 202 },
         scenarioLabels: {
-          forensic: 'Backwards Diode D3',
-          rov: 'Backwards Diode D3',
-          outback: 'Backwards Diode D3',
+          forensic: 'Diode D3',
+          rov: 'Diode D3',
+          outback: 'Diode D3',
         },
         schematic: { x: 505, y: 258, orientation: 'vertical' },
         physical: { x: 105, y: 410 },
@@ -4069,10 +4069,10 @@ export const LEVELS: LevelDefinition[] = [
           {
             stageNumber: 1,
             code: '000',
-            title: 'Step 1 of 2 · Backwards Diode',
+            title: 'Step 1 of 2 · Diode D3 Current',
             prompt:
-              'Tap Check A: A1 on the switchboard (or look at D3 on your Circuit Map). How many Amps pass through backwards diode D3? Enter 3 digits.',
-            formulaHint: 'Tap the highlighted A1 check button!',
+              'Look at diode D3 on your Circuit Map (or tap Check A: A1). How many Amps flow through D3? Enter 3 digits with leading zeros.',
+            formulaHint: 'Check the diode arrow direction on D3 — or tap Check A: A1 on the switchboard.',
             syllabusNote: 'Stage 5 Extension — Semiconductor diode polarity',
           },
           {
@@ -4080,8 +4080,8 @@ export const LEVELS: LevelDefinition[] = [
             code: '025',
             title: 'Step 2 of 2 · Total Resistance Needed',
             prompt:
-              'To run the Cooling Fan (M1) at 0.40 A from the 10 V battery, find the TOTAL resistance needed using R = V ÷ I (10 ÷ 0.40). Enter in Ohms as 3 digits (like 025).',
-            formulaHint: 'R_total = 10 V ÷ 0.40 A. (Then remember R1 = 10 Ω is already there when you set Dial VR1!)',
+              'Measure the battery Volts (TP1–TP2), then use R = V ÷ I to find the TOTAL resistance needed for the Cooling Fan (M1) to draw 0.40 A. Enter in Ohms as 3 digits with leading zeros.',
+            formulaHint: 'Use R = V ÷ I with the battery voltage from TP1–TP2. Remember R1 = 10 Ω is already in series when you set Dial VR1!',
             syllabusNote: 'NSW Stage 5 PW3b / PW3c — Combined series resistance & Ohm’s Law',
           },
         ],
@@ -4102,11 +4102,11 @@ export const LEVELS: LevelDefinition[] = [
     worksheet: {
       syllabusOutcome: 'SC5-11PW / PW3b, PW3c, PW4b — Semiconductor diodes & series-rheostat synthesis',
       keypadSummary:
-        'Hatch 1 (2-Step): Step 1 = Amps through backwards diode D3; Step 2 = total Ohms needed for 0.40 A at 10 V.',
+        'Hatch 1 (2-Step): Step 1 = Amps through diode D3; Step 2 = total Ohms needed for M1 to run at 0.40 A.',
       questions: [
-        'Why does turning OFF switch S3 by itself NOT stop the Siren once S2 is ON? Which diode lets power sneak across?',
-        'Why does Amp Clip A1 read 0.00 A even though switch S5 is ON?',
-        'If total resistance needs to be 25 Ω and fixed resistor R1 is 10 Ω, what number should you set Dial VR1 to?',
+        'Why does turning OFF the Siren’s own switch not stop it once the bypass path is ON? Which diode lets power sneak across?',
+        'Check the diode D3 branch: why does current behave the way it does at Check A1 even when its branch switch is ON?',
+        'Once you work out the total resistance needed for M1, why must you subtract fixed resistor R1 (10 Ω) before setting Dial VR1?',
       ],
       answerKey: {
         switchStates: {
