@@ -133,11 +133,38 @@
   animation: stamp-pop 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* Animated flow streams inside Mini-Lesson analogies (water pipes & energy streams) */
+@keyframes lesson-flow {
+  from {
+    stroke-dashoffset: 40;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.lesson-flow-normal {
+  animation: lesson-flow 1.1s linear infinite;
+}
+
+.lesson-flow-fast {
+  animation: lesson-flow 0.45s linear infinite;
+}
+
+.lesson-flow-custom {
+  animation-name: lesson-flow;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .fan-spinning,
   .siren-active,
   .animate-chassis-shake,
-  .animate-stamp-pop {
+  .animate-stamp-pop,
+  .lesson-flow-normal,
+  .lesson-flow-fast,
+  .lesson-flow-custom {
     animation: none !important;
   }
 }

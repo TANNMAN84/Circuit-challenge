@@ -23,6 +23,13 @@ import { RetroDigitalClock } from './components/RetroDigitalClock';
 import { KeypadModal } from './components/KeypadModal';
 import { BulkPrintModal, TeacherPinModal, TeacherToolbar } from './components/TeacherPinModal';
 import { PrintWorksheet, buildStandaloneWorksheetHtml } from './components/PrintWorksheet';
+import { MiniLessonModal } from './components/MiniLessonModal';
+import {
+  LessonId,
+  getLessonById,
+  getRefresherLessonForLevel,
+  getRequiredLessonForLevel,
+} from './data/lessons';
 import {
   AlertTriangle,
   ArrowRight,
@@ -30,6 +37,7 @@ import {
   CheckCircle2,
   Circle,
   Flame,
+  GraduationCap,
   Lock,
   Moon,
   Printer,
@@ -47,6 +55,7 @@ const LS_KEYS = {
   theme: 'circuit_disarm_theme',
   teacherPin: 'circuit_disarm_teacher_pin',
   completed: 'circuit_disarm_completed_levels',
+  completedLessons: 'circuit_disarm_completed_lessons',
   confidence: 'circuit_disarm_confidence_tier',
   scenario: 'circuit_disarm_scenario',
 };
@@ -118,6 +127,17 @@ export default function App() {
     }
   });
 
+  const [completedLessonIds, setCompletedLessonIds] = useState<LessonId[]>(() => {
+    try {
+      const raw = localStorage.getItem(LS_KEYS.completedLessons);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? (parsed.filter((s) => typeof s === 'string') as LessonId[]) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const [teacherPin, setTeacherPin] = useState<string>(() => {
     try {
       return localStorage.getItem(LS_KEYS.teacherPin) || '2026';
@@ -128,6 +148,7 @@ export default function App() {
 
   // Global UI states
   const [activeLevelId, setActiveLevelId] = useState<number | null>(null);
+  const [activeLessonId, setActiveLessonId] = useState<LessonId | null>(null);
   const [muted, setMuted] = useState(false);
   const [teacherUnlocked, setTeacherUnlocked] = useState(false);
   const [pinModalOpen, setPinModalOpen] = useState(false);
@@ -138,6 +159,7 @@ export default function App() {
   } | null>(null);
   const [showViBadges, setShowViBadges] = useState(true);
   const [paperOnlyMode, setPaperOnlyMode] = useState(false);
+  const [bypassLessonGates, setBypassLessonGates] = useState(false);
   const [timerPaused, setTimerPaused] = useState(false);
   const [schematicDrawerOpen, setSchematicDrawerOpen] = useState(false);
   const [shakeTrigger, setShakeTrigger] = useState(0);
@@ -227,15 +249,36 @@ export default function App() {
   );
 
   const handleLaunchLevel = useCallback(
-    (levelId: number) => {
+    (levelId: number, forceBypass = false) => {
       const target = LEVELS.find((l) => l.id === levelId);
       if (!target) return;
+      if (!forceBypass && !bypassLessonGates) {
+        const reqLesson = getRequiredLessonForLevel(levelId);
+        if (reqLesson && !completedLessonIds.includes(reqLesson.id)) {
+          setActiveLessonId(reqLesson.id);
+          return;
+        }
+      }
+      setActiveLessonId(null);
       setActiveLevelId(levelId);
       setSchematicDrawerOpen(false);
       initialiseLevel(target);
     },
-    [initialiseLevel],
+    [initialiseLevel, bypassLessonGates, completedLessonIds],
   );
+
+  const handleCompleteLesson = useCallback((lessonId: LessonId) => {
+    setCompletedLessonIds((prev) => {
+      if (prev.includes(lessonId)) return prev;
+      const next = [...prev, lessonId];
+      try {
+        localStorage.setItem(LS_KEYS.completedLessons, JSON.stringify(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }, []);
 
   const handleResetCircuit = useCallback(() => {
     if (!activeLevel) return;
@@ -351,14 +394,15 @@ export default function App() {
     }
   }, [activeLevel, solution, blownFuseIds, faultState.locked, thermalPct]);
 
-  // Deterministic 1-second Confidence Countdown Timer
+  // Deterministic 1-second Confidence Countdown Timer (auto-pauses while viewing a Mini-Lesson refresher)
   useEffect(() => {
     if (
       !activeLevel ||
       remainingSeconds === null ||
       faultState.locked ||
       isWon ||
-      timerPaused
+      timerPaused ||
+      activeLessonId !== null
     ) {
       return;
     }
@@ -389,7 +433,7 @@ export default function App() {
     }, 1000);
 
     return () => window.clearInterval(timer);
-  }, [activeLevel, remainingSeconds, faultState.locked, isWon, timerPaused]);
+  }, [activeLevel, remainingSeconds, faultState.locked, isWon, timerPaused, activeLessonId]);
 
   // Level 9 Heat Gauge Simulation
   useEffect(() => {
@@ -489,8 +533,10 @@ export default function App() {
 
   const handleClearProgress = () => {
     setCompletedLevelIds([]);
+    setCompletedLessonIds([]);
     try {
       localStorage.removeItem(LS_KEYS.completed);
+      localStorage.removeItem(LS_KEYS.completedLessons);
     } catch {
       // ignore
     }
@@ -718,8 +764,9 @@ export default function App() {
           activeLevelId={activeLevelId}
           showViBadges={showViBadges}
           paperOnlyMode={paperOnlyMode}
+          bypassLessonGates={bypassLessonGates}
           timerPaused={timerPaused}
-          onJumpLevel={handleLaunchLevel}
+          onJumpLevel={(id) => handleLaunchLevel(id, true)}
           onForceUnlockHatches={handleForceUnlockHatches}
           onToggleViBadges={() => setShowViBadges((v) => !v)}
           onTogglePaperOnly={() => {
@@ -729,6 +776,7 @@ export default function App() {
               return next;
             });
           }}
+          onToggleBypassLessonGates={() => setBypassLessonGates((b) => !b)}
           onTogglePauseTimer={() => setTimerPaused((p) => !p)}
           onOpenBulkPrint={() => setBulkPrintModalOpen(true)}
           onUpdatePin={handleUpdatePin}
@@ -751,9 +799,12 @@ export default function App() {
             scenario={scenario}
             confidenceTier={confidenceTier}
             completedLevelIds={completedLevelIds}
+            completedLessonIds={completedLessonIds}
+            bypassLessonGates={bypassLessonGates}
             onSelectScenario={handleSelectScenario}
             onSelectConfidence={handleSelectConfidence}
-            onLaunchLevel={handleLaunchLevel}
+            onLaunchLevel={(id) => handleLaunchLevel(id)}
+            onOpenLesson={(lessonId) => setActiveLessonId(lessonId)}
             onClearProgress={handleClearProgress}
           />
         ) : (
@@ -778,18 +829,29 @@ export default function App() {
                 {LEVELS.map((lvl) => {
                   const isCurrent = lvl.id === activeLevel.id;
                   const isDone = completedSet.has(lvl.id);
+                  const reqLesson = getRequiredLessonForLevel(lvl.id);
+                  const isGated =
+                    !bypassLessonGates &&
+                    reqLesson !== null &&
+                    !completedLessonIds.includes(reqLesson.id);
                   return (
                     <button
                       key={lvl.id}
                       type="button"
                       onClick={() => handleLaunchLevel(lvl.id)}
-                      title={`Mission ${lvl.id}: ${lvl.title}`}
+                      title={
+                        isGated && reqLesson
+                          ? `Mission ${lvl.id} (Locked — complete Mini-Lesson 0${reqLesson.number})`
+                          : `Mission ${lvl.id}: ${lvl.title}`
+                      }
                       className={`w-7 h-7 rounded-md font-mono text-xs font-bold transition-all ${
                         isCurrent
                           ? `${scenarioMeta.accentBgClass} shadow-sm scale-105`
                           : isDone
                             ? 'bg-emerald-600/20 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-500/40'
-                            : 'bg-slate-200/80 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700'
+                            : isGated
+                              ? 'bg-slate-200/60 dark:bg-slate-900 text-slate-400 dark:text-slate-600 border border-dashed border-slate-300 dark:border-slate-700 hover:border-amber-500 hover:text-amber-600'
+                              : 'bg-slate-200/80 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700'
                       }`}
                     >
                       {String(lvl.id).padStart(2, '0')}
@@ -799,6 +861,17 @@ export default function App() {
               </div>
 
               <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setActiveLessonId(getRefresherLessonForLevel(activeLevel.id).id)
+                  }
+                  title="Open the interactive animated mini-lesson for this mission"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-amber-400/80 dark:border-amber-600/70 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-950/70 text-xs font-bold text-amber-950 dark:text-amber-200 transition-colors whitespace-nowrap"
+                >
+                  <GraduationCap className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                  Mini-Lesson
+                </button>
                 {!paperOnlyMode ? (
                   <button
                     type="button"
@@ -905,7 +978,7 @@ export default function App() {
                   isLevelOne={activeLevel.id === 1}
                   isWon={isWon}
                   isLockedOut={faultState.locked}
-                  isPaused={timerPaused}
+                  isPaused={timerPaused || activeLessonId !== null}
                   onSelectConfidence={handleSelectConfidence}
                 />
 
@@ -950,14 +1023,38 @@ export default function App() {
                     </div>
                     <div className="flex items-center gap-2">
                       {activeLevel.id < LEVELS.length ? (
-                        <button
-                          type="button"
-                          onClick={() => handleLaunchLevel(activeLevel.id + 1)}
-                          className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-extrabold transition-colors"
-                        >
-                          Next Mission (Mission {String(activeLevel.id + 1).padStart(2, '0')})
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </button>
+                        (() => {
+                          const nextId = activeLevel.id + 1;
+                          const nextGate = !bypassLessonGates
+                            ? getRequiredLessonForLevel(nextId)
+                            : null;
+                          const needsLesson =
+                            nextGate !== null && !completedLessonIds.includes(nextGate.id);
+
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => handleLaunchLevel(nextId)}
+                              className={`flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-lg text-xs font-extrabold transition-colors ${
+                                needsLesson
+                                  ? 'bg-amber-400 hover:bg-amber-300 text-slate-950'
+                                  : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
+                              }`}
+                            >
+                              {needsLesson && nextGate ? (
+                                <>
+                                  <GraduationCap className="w-4 h-4" />
+                                  Next: Mini-Lesson 0{nextGate.number} ({nextGate.shortTitle})
+                                </>
+                              ) : (
+                                <>
+                                  Next Mission (Mission {String(nextId).padStart(2, '0')})
+                                </>
+                              )}
+                              <ArrowRight className="w-3.5 h-3.5" />
+                            </button>
+                          );
+                        })()
                       ) : (
                         <button
                           type="button"
@@ -1215,6 +1312,22 @@ export default function App() {
           onClose={() => setPinModalOpen(false)}
         />
       )}
+
+      {/* Interactive Animated Mini-Lesson & Unlock Quiz Modal */}
+      {activeLessonId && (() => {
+        const lessonObj = getLessonById(activeLessonId);
+        if (!lessonObj) return null;
+        return (
+          <MiniLessonModal
+            key={lessonObj.id}
+            lesson={lessonObj}
+            alreadyCompleted={completedLessonIds.includes(lessonObj.id)}
+            onCompleteLesson={handleCompleteLesson}
+            onLaunchMission={(lvlId) => handleLaunchLevel(lvlId, true)}
+            onClose={() => setActiveLessonId(null)}
+          />
+        );
+      })()}
 
       {/* Teacher Mode Bulk Print / Download All 10 Modal */}
       {bulkPrintModalOpen && teacherUnlocked && (

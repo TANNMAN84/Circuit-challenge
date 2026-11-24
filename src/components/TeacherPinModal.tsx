@@ -7,6 +7,7 @@ import {
   Eye,
   EyeOff,
   FileText,
+  GraduationCap,
   KeyRound,
   Lock,
   Pause,
@@ -253,11 +254,13 @@ interface TeacherToolbarProps {
   activeLevelId: number | null;
   showViBadges: boolean;
   paperOnlyMode: boolean;
+  bypassLessonGates: boolean;
   timerPaused: boolean;
   onJumpLevel: (levelId: number) => void;
   onForceUnlockHatches: () => void;
   onToggleViBadges: () => void;
   onTogglePaperOnly: () => void;
+  onToggleBypassLessonGates: () => void;
   onTogglePauseTimer: () => void;
   onOpenBulkPrint: () => void;
   onUpdatePin: (newPin: string) => void;
@@ -269,11 +272,13 @@ export const TeacherToolbar: React.FC<TeacherToolbarProps> = ({
   activeLevelId,
   showViBadges,
   paperOnlyMode,
+  bypassLessonGates,
   timerPaused,
   onJumpLevel,
   onForceUnlockHatches,
   onToggleViBadges,
   onTogglePaperOnly,
+  onToggleBypassLessonGates,
   onTogglePauseTimer,
   onOpenBulkPrint,
   onUpdatePin,
@@ -373,6 +378,20 @@ export const TeacherToolbar: React.FC<TeacherToolbarProps> = ({
               </button>
             </>
           )}
+
+          <button
+            type="button"
+            onClick={onToggleBypassLessonGates}
+            title="Bypass mini-lesson unlock quizzes so all 10 missions can be opened directly"
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded border text-xs font-medium whitespace-nowrap transition-colors ${
+              bypassLessonGates
+                ? 'bg-emerald-700 border-emerald-700 text-white'
+                : 'bg-white dark:bg-slate-900 border-amber-400/80 dark:border-amber-700 text-slate-800 dark:text-slate-200'
+            }`}
+          >
+            <GraduationCap className="w-3.5 h-3.5" />
+            {bypassLessonGates ? 'Lesson Gates: Bypassed' : 'Lesson Gates: ON'}
+          </button>
 
           <button
             type="button"

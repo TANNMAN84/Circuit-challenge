@@ -11,19 +11,29 @@ import {
   Check,
   Compass,
   Gauge,
+  GraduationCap,
+  Lock,
   Radio,
   ShieldAlert,
   Zap,
 } from 'lucide-react';
+import {
+  LESSONS,
+  LessonId,
+  getRequiredLessonForLevel,
+} from '../data/lessons';
 
 interface MissionHubProps {
   levels: LevelDefinition[];
   scenario: ScenarioId;
   confidenceTier: ConfidenceTier;
   completedLevelIds: number[];
+  completedLessonIds: LessonId[];
+  bypassLessonGates: boolean;
   onSelectScenario: (scenario: ScenarioId) => void;
   onSelectConfidence: (tier: ConfidenceTier) => void;
   onLaunchLevel: (levelId: number) => void;
+  onOpenLesson: (lessonId: LessonId) => void;
   onClearProgress: () => void;
 }
 
@@ -38,12 +48,16 @@ export const MissionHub: React.FC<MissionHubProps> = ({
   scenario,
   confidenceTier,
   completedLevelIds,
+  completedLessonIds,
+  bypassLessonGates,
   onSelectScenario,
   onSelectConfidence,
   onLaunchLevel,
+  onOpenLesson,
   onClearProgress,
 }) => {
   const completedSet = new Set(completedLevelIds);
+  const completedLessonSet = new Set(completedLessonIds);
   const activeScenario = SCENARIOS[scenario];
   const levelOnePreview = formatCountdown(
     computeLevelSeconds(levels[0].standardSeconds, confidenceTier),
@@ -94,8 +108,8 @@ export const MissionHub: React.FC<MissionHubProps> = ({
                 <ArrowRight className="w-4 h-4" />
               </button>
               <span className="text-xs text-slate-600 dark:text-slate-400 font-mono">
-                {completedLevelIds.length} / 10 cleared · All missions unlocked
-                {completedLevelIds.length > 0 && (
+                {completedLevelIds.length} / 10 missions · {completedLessonIds.length} / {LESSONS.length} mini-lessons
+                {(completedLevelIds.length > 0 || completedLessonIds.length > 0) && (
                   <>
                     {' '}·{' '}
                     <button
@@ -103,7 +117,7 @@ export const MissionHub: React.FC<MissionHubProps> = ({
                       onClick={onClearProgress}
                       className="underline hover:text-slate-900 dark:hover:text-white"
                     >
-                      Reset checks
+                      Reset progress
                     </button>
                   </>
                 )}
@@ -222,30 +236,69 @@ export const MissionHub: React.FC<MissionHubProps> = ({
             02. Pick a Mission (01–10)
           </h2>
           <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-            Jump straight into any mission · Print Circuit Maps inside each level
+            Complete interactive Mini-Lessons to unlock new stages · Print Circuit Maps inside each level
           </span>
         </div>
 
         <div className="space-y-6">
           {operations.map((op) => {
             const opLevels = levels.filter((l) => l.phase === op.num);
+            const stageLessons = LESSONS.filter((lsn) =>
+              lsn.unlocksLevelIds.some((id) => opLevels.some((ol) => ol.id === id)),
+            );
+
             return (
               <div
                 key={op.num}
                 className="rounded-2xl border border-slate-300/80 dark:border-slate-700/80 bg-white/88 dark:bg-slate-950/80 backdrop-blur-md p-5 space-y-4 shadow-lg"
               >
-                <div className="border-b border-slate-200 dark:border-slate-800 pb-2.5">
-                  <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
-                    {op.title}
-                  </h3>
-                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
-                    {op.subtitle}
-                  </p>
+                <div className="border-b border-slate-200 dark:border-slate-800 pb-3 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
+                      {op.title}
+                    </h3>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                      {op.subtitle}
+                    </p>
+                  </div>
+
+                  {/* Interactive Mini-Lesson Buttons for this Stage */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {stageLessons.map((lsn) => {
+                      const lsnDone = completedLessonSet.has(lsn.id);
+                      return (
+                        <button
+                          key={lsn.id}
+                          type="button"
+                          onClick={() => onOpenLesson(lsn.id)}
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-colors whitespace-nowrap ${
+                            lsnDone
+                              ? 'border-emerald-500/50 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-950/60'
+                              : 'border-amber-500/70 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-950/60'
+                          }`}
+                        >
+                          {lsnDone ? (
+                            <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                          ) : (
+                            <GraduationCap className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                          )}
+                          <span>
+                            Lesson 0{lsn.number}: {lsn.shortTitle}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                   {opLevels.map((lvl) => {
                     const isDone = completedSet.has(lvl.id);
+                    const reqLesson = getRequiredLessonForLevel(lvl.id);
+                    const isLocked =
+                      !bypassLessonGates &&
+                      reqLesson !== null &&
+                      !completedLessonSet.has(reqLesson.id);
                     const secs = computeLevelSeconds(lvl.standardSeconds, confidenceTier);
                     const gear: string[] = [
                       lvl.panelStyle === 'switchboard' ? 'Switchboard' : 'Wired Bay',
@@ -261,15 +314,30 @@ export const MissionHub: React.FC<MissionHubProps> = ({
                       <button
                         key={lvl.id}
                         type="button"
-                        onClick={() => onLaunchLevel(lvl.id)}
-                        className="group text-left rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121928] hover:border-amber-500 dark:hover:border-amber-400 p-4 transition-all hover:-translate-y-0.5 shadow-sm hover:shadow-md flex flex-col justify-between gap-3"
+                        onClick={() => {
+                          if (isLocked && reqLesson) {
+                            onOpenLesson(reqLesson.id);
+                          } else {
+                            onLaunchLevel(lvl.id);
+                          }
+                        }}
+                        className={`group text-left rounded-xl border p-4 transition-all flex flex-col justify-between gap-3 ${
+                          isLocked
+                            ? 'border-slate-200 dark:border-slate-800 bg-slate-50/90 dark:bg-[#0e1420]/85 hover:border-amber-500/70 opacity-90'
+                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#121928] hover:border-amber-500 dark:hover:border-amber-400 hover:-translate-y-0.5 shadow-sm hover:shadow-md'
+                        }`}
                       >
                         <div className="space-y-1.5">
                           <div className="flex items-center justify-between text-xs font-mono">
                             <span className="font-bold text-slate-500 dark:text-slate-400">
                               MISSION {String(lvl.id).padStart(2, '0')}
                             </span>
-                            {isDone ? (
+                            {isLocked ? (
+                              <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-400 font-bold">
+                                <Lock className="w-3 h-3" />
+                                Lesson 0{reqLesson?.number}
+                              </span>
+                            ) : isDone ? (
                               <span className="inline-flex items-center gap-1 text-emerald-700 dark:text-emerald-400 font-bold">
                                 <Check className="w-3.5 h-3.5" />
                                 Cleared
@@ -286,16 +354,24 @@ export const MissionHub: React.FC<MissionHubProps> = ({
                           </div>
 
                           <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
-                            {lvl.briefings[scenario]}
+                            {isLocked && reqLesson
+                              ? `Complete Mini-Lesson 0${reqLesson.number} (${reqLesson.shortTitle}) to unlock this mission.`
+                              : lvl.briefings[scenario]}
                           </p>
                         </div>
 
                         <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800/80 text-xs text-slate-500 dark:text-slate-400">
                           <span className="inline-flex items-center gap-1.5 truncate">
-                            {lvl.multimeterEnabled && (
-                              <Gauge className="w-3.5 h-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                            {isLocked ? (
+                              <GraduationCap className="w-3.5 h-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                            ) : (
+                              lvl.multimeterEnabled && (
+                                <Gauge className="w-3.5 h-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                              )
                             )}
-                            <span className="truncate">{gear.join(' · ')}</span>
+                            <span className="truncate">
+                              {isLocked ? 'Open Mini-Lesson to unlock' : gear.join(' · ')}
+                            </span>
                           </span>
                           <ArrowRight className="w-3.5 h-3.5 shrink-0 text-slate-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 group-hover:translate-x-0.5 transition-transform" />
                         </div>
