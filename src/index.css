@@ -157,6 +157,107 @@
   animation-iteration-count: infinite;
 }
 
+/* Dramatic climax animations: explosion flash, shockwaves, flying sparks, arcs, strobes */
+@keyframes blast-flash {
+  0% {
+    opacity: 0.95;
+  }
+  25% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-blast-flash {
+  animation: blast-flash 0.55s ease-out forwards;
+}
+
+@keyframes shockwave-ring {
+  0% {
+    transform: scale(0.35);
+    opacity: 0.95;
+  }
+  100% {
+    transform: scale(9.5);
+    opacity: 0;
+  }
+}
+
+.animate-shockwave-ring {
+  animation: shockwave-ring 0.85s cubic-bezier(0.12, 0.72, 0.22, 1) forwards;
+}
+
+@keyframes spark-burst {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1.2);
+    opacity: 1;
+  }
+  75% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate3d(var(--dx, 140px), var(--dy, -120px), 0) scale(0.2);
+    opacity: 0;
+  }
+}
+
+.animate-spark-burst {
+  animation: spark-burst 0.82s cubic-bezier(0.16, 0.84, 0.3, 1) forwards;
+}
+
+@keyframes arc-flash {
+  0%, 14%, 28%, 46% {
+    opacity: 1;
+  }
+  7%, 21%, 36%, 100% {
+    opacity: 0;
+  }
+}
+
+.animate-arc-flash {
+  animation: arc-flash 0.95s ease-out forwards;
+}
+
+@keyframes strobe-sweep {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+.animate-strobe-sweep {
+  animation: strobe-sweep 1.8s linear infinite;
+}
+
+@keyframes blast-recoil {
+  0% {
+    opacity: 0;
+    transform: scale(1.22) translate3d(0, -10px, 0);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(0.96) translate3d(-8px, 4px, 0);
+  }
+  40% {
+    transform: scale(1.03) translate3d(7px, -4px, 0);
+  }
+  65% {
+    transform: scale(0.99) translate3d(-4px, 2px, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+}
+
+.animate-blast-recoil {
+  animation: blast-recoil 0.48s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .fan-spinning,
   .siren-active,
@@ -164,7 +265,13 @@
   .animate-stamp-pop,
   .lesson-flow-normal,
   .lesson-flow-fast,
-  .lesson-flow-custom {
+  .lesson-flow-custom,
+  .animate-blast-flash,
+  .animate-shockwave-ring,
+  .animate-spark-burst,
+  .animate-arc-flash,
+  .animate-strobe-sweep,
+  .animate-blast-recoil {
     animation: none !important;
   }
 }

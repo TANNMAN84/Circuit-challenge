@@ -1,6 +1,5 @@
 import React from 'react';
 import { LevelDefinition, ScenarioId } from '../types/circuit';
-import { SCENARIOS } from '../data/scenarios';
 import { SchematicSvg } from './SchematicSvg';
 
 interface PrintWorksheetProps {
@@ -20,8 +19,6 @@ const StudentWorksheetPage: React.FC<{
   scenario: ScenarioId;
   pageBreakBefore: boolean;
 }> = ({ level, scenario, pageBreakBefore }) => {
-  const scenarioMeta = SCENARIOS[scenario];
-
   return (
     <section
       className={`print-student-page ${pageBreakBefore ? 'print-page-break' : ''}`}
@@ -30,7 +27,7 @@ const StudentWorksheetPage: React.FC<{
       <div className="print-avoid-break border-b-2 border-black pb-2 mb-2.5 flex items-end justify-between gap-4">
         <div>
           <div className="text-[9pt] font-mono font-bold uppercase tracking-wider">
-            Circuit Disarm · Circuit Map Sheet · {scenarioMeta.name}
+            Circuit Disarm · Circuit Map Sheet
           </div>
           <h1 className="text-[15pt] font-bold leading-tight mt-0.5">
             Mission {String(level.id).padStart(2, '0')}: {level.title}
@@ -155,10 +152,7 @@ const StudentWorksheetPage: React.FC<{
 
 const TeacherAnswerKeyPage: React.FC<{
   level: LevelDefinition;
-  scenario: ScenarioId;
-}> = ({ level, scenario }) => {
-  const scenarioMeta = SCENARIOS[scenario];
-
+}> = ({ level }) => {
   return (
     <section className="print-teacher-key-page">
       <div className="border-b-2 border-black pb-2 mb-4 flex items-end justify-between">
@@ -167,7 +161,7 @@ const TeacherAnswerKeyPage: React.FC<{
             TEACHER ANSWER KEY · CIRCUIT DISARM
           </div>
           <h2 className="text-[15pt] font-bold mt-0.5">
-            Mission {String(level.id).padStart(2, '0')}: {level.title} ({scenarioMeta.shortName})
+            Mission {String(level.id).padStart(2, '0')}: {level.title}
           </h2>
           <div className="text-[8.5pt] font-mono mt-0.5">
             {level.worksheet.syllabusOutcome}
@@ -264,7 +258,7 @@ export const PrintWorksheet = React.forwardRef<HTMLDivElement, PrintWorksheetPro
                 pageBreakBefore={idx > 0}
               />
               {includeTeacherAnswerKey && (
-                <TeacherAnswerKeyPage level={level} scenario={scenario} />
+                <TeacherAnswerKeyPage level={level} />
               )}
             </React.Fragment>
           ))
@@ -285,7 +279,6 @@ export const PrintWorksheet = React.forwardRef<HTMLDivElement, PrintWorksheetPro
                 <TeacherAnswerKeyPage
                   key={`key-${level.id}`}
                   level={level}
-                  scenario={scenario}
                 />
               ))}
           </>

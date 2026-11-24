@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { LEVELS } from './data/levels';
 import {
   CONFIDENCE_TIERS,
+  DEFAULT_SCENARIO,
   SCENARIOS,
   computeLevelSeconds,
 } from './data/scenarios';
@@ -12,7 +13,6 @@ import {
   ConfidenceTier,
   FaultState,
   LevelDefinition,
-  ScenarioId,
 } from './types/circuit';
 import { MissionHub } from './components/MissionHub';
 import { HardwarePanelSvg } from './components/HardwarePanelSvg';
@@ -24,6 +24,7 @@ import { KeypadModal } from './components/KeypadModal';
 import { BulkPrintModal, TeacherPinModal, TeacherToolbar } from './components/TeacherPinModal';
 import { PrintWorksheet, buildStandaloneWorksheetHtml } from './components/PrintWorksheet';
 import { MiniLessonModal } from './components/MiniLessonModal';
+import { DramaticEventOverlay } from './components/DramaticEventOverlay';
 import {
   LessonId,
   getLessonById,
@@ -57,7 +58,6 @@ const LS_KEYS = {
   completed: 'circuit_disarm_completed_levels',
   completedLessons: 'circuit_disarm_completed_lessons',
   confidence: 'circuit_disarm_confidence_tier',
-  scenario: 'circuit_disarm_scenario',
 };
 
 const EMPTY_FAULT: FaultState = {
@@ -98,14 +98,7 @@ export default function App() {
     }
   });
 
-  const [scenario, setScenario] = useState<ScenarioId>(() => {
-    try {
-      const saved = localStorage.getItem(LS_KEYS.scenario) as ScenarioId | null;
-      return saved && saved in SCENARIOS ? saved : 'forensic';
-    } catch {
-      return 'forensic';
-    }
-  });
+  const scenario = DEFAULT_SCENARIO;
 
   const [confidenceTier, setConfidenceTier] = useState<ConfidenceTier>(() => {
     try {
@@ -177,6 +170,7 @@ export default function App() {
   const [blownFuseIds, setBlownFuseIds] = useState<string[]>([]);
   const [faultState, setFaultState] = useState<FaultState>(EMPTY_FAULT);
   const [isWon, setIsWon] = useState(false);
+  const [eventOverlayDismissed, setEventOverlayDismissed] = useState(false);
   const [activeHatchModal, setActiveHatchModal] = useState<CircuitHatch | null>(null);
 
   // Countdown timer & Level 9 heat gauge state
@@ -207,15 +201,6 @@ export default function App() {
     soundEngine.setMuted(muted);
   }, [muted]);
 
-  const handleSelectScenario = (next: ScenarioId) => {
-    setScenario(next);
-    try {
-      localStorage.setItem(LS_KEYS.scenario, next);
-    } catch {
-      // ignore
-    }
-  };
-
   const handleSelectConfidence = (tier: ConfidenceTier) => {
     setConfidenceTier(tier);
     try {
@@ -227,6 +212,7 @@ export default function App() {
       setRemainingSeconds(computeLevelSeconds(activeLevel.standardSeconds, tier));
       if (faultState.kind === 'timeout') {
         setFaultState(EMPTY_FAULT);
+        setEventOverlayDismissed(false);
       }
     }
   };
@@ -239,6 +225,7 @@ export default function App() {
       setBlownFuseIds([]);
       setFaultState(EMPTY_FAULT);
       setIsWon(false);
+      setEventOverlayDismissed(false);
       setActiveHatchModal(null);
       setRemainingSeconds(computeLevelSeconds(level.standardSeconds, confidenceTier));
       setThermalPct(level.thermalEnabled ? 78 : 20);
@@ -255,6 +242,7 @@ export default function App() {
       if (!forceBypass && !bypassLessonGates) {
         const reqLesson = getRequiredLessonForLevel(levelId);
         if (reqLesson && !completedLessonIds.includes(reqLesson.id)) {
+          setEventOverlayDismissed(true);
           setActiveLessonId(reqLesson.id);
           return;
         }
@@ -308,14 +296,15 @@ export default function App() {
 
     if (!faultState.locked) {
       if (solution.shortCircuit.detected) {
-        soundEngine.playFaultTrip();
+        soundEngine.playElectricZap();
         setShakeTrigger((n) => n + 1);
+        setEventOverlayDismissed(false);
         setFaultState({
           locked: true,
           kind: 'short',
           title: 'SHORT CIRCUIT — BREAKER TRIPPED!',
           detail:
-            'Direct loop from + to − with no load. Check the glowing red wires and press Reset.',
+            'Direct loop from + to − with no load. Click Inspect Wires to check the glowing red path, then press Reset.',
           highlightWireIds: solution.shortCircuit.faultWireIds,
           highlightComponentIds: ['V1'],
           highlightSwitchIds: solution.shortCircuit.faultSwitchIds,
@@ -324,8 +313,9 @@ export default function App() {
       }
 
       if (solution.blownFuseIds.length > 0) {
-        soundEngine.playFaultTrip();
+        soundEngine.playElectricZap();
         setShakeTrigger((n) => n + 1);
+        setEventOverlayDismissed(false);
         const fuseId = solution.blownFuseIds[0];
         const fuseComp = activeLevel.components.find((c) => c.id === fuseId);
         setFaultState({
@@ -341,8 +331,9 @@ export default function App() {
       }
 
       if (solution.overloadedComponentIds.length > 0) {
-        soundEngine.playFaultTrip();
+        soundEngine.playElectricZap();
         setShakeTrigger((n) => n + 1);
+        setEventOverlayDismissed(false);
         const cid = solution.overloadedComponentIds[0];
         const comp = activeLevel.components.find((c) => c.id === cid);
         const br = solution.branches[cid];
@@ -359,8 +350,9 @@ export default function App() {
       }
 
       if (solution.triggeredTrap) {
-        soundEngine.playFaultTrip();
+        soundEngine.playSirenAlarm();
         setShakeTrigger((n) => n + 1);
+        setEventOverlayDismissed(false);
         setFaultState({
           locked: true,
           kind: 'sequence',
@@ -379,6 +371,7 @@ export default function App() {
       if (!winAnnouncedRef.current) {
         winAnnouncedRef.current = true;
         setIsWon(true);
+        setEventOverlayDismissed(false);
         soundEngine.playDisarmSuccess();
         setCompletedLevelIds((prev) => {
           if (prev.includes(activeLevel.id)) return prev;
@@ -411,14 +404,15 @@ export default function App() {
       setRemainingSeconds((prev) => {
         if (prev === null) return null;
         if (prev <= 1) {
-          soundEngine.playFaultTrip();
+          soundEngine.playExplosion();
           setShakeTrigger((n) => n + 1);
+          setEventOverlayDismissed(false);
           setFaultState({
             locked: true,
             kind: 'timeout',
-            title: "TIME'S UP — BOX LOCKED!",
+            title: "BOOM! TIME'S UP!",
             detail:
-              'The red clock hit 00:00! Press Reset to try again, or choose a slower timer pace.',
+              'The countdown clock hit 00:00 and detonated the core! Press Reset to try again, or pick a slower clock pace.',
             highlightWireIds: [],
             highlightComponentIds: [],
             highlightSwitchIds: [],
@@ -445,14 +439,15 @@ export default function App() {
         if (wasteW > 70) {
           const next = Math.min(100, prev + 0.65);
           if (next >= 100) {
-            soundEngine.playFaultTrip();
+            soundEngine.playExplosion();
             setShakeTrigger((n) => n + 1);
+            setEventOverlayDismissed(false);
             setFaultState({
               locked: true,
               kind: 'thermal',
-              title: 'OVERHEATED — BOX LOCKED!',
+              title: 'CORE MELTDOWN!',
               detail:
-                'The hot filament globes wasted 85% of their energy as heat and overheated the box. Switch the hot globes off first and turn on the cool LEDs!',
+                'The hot filament globes wasted 85% of their energy as heat and melted the core. Switch the hot globes off first and turn on the cool LEDs!',
               highlightWireIds: [],
               highlightComponentIds: ['LAMP1', 'LAMP2'],
               highlightSwitchIds: [],
@@ -575,11 +570,10 @@ export default function App() {
     window.setTimeout(() => {
       const container = printWorksheetRef.current;
       if (container) {
-        const meta = SCENARIOS[scenario];
         const pageCount = includeAnswerKeys ? LEVELS.length * 2 : LEVELS.length;
         const docTitle = includeAnswerKeys
-          ? `Circuit Disarm — All 10 Circuit Maps & Teacher Answer Keys (${meta.name})`
-          : `Circuit Disarm — All 10 Student Circuit Maps & Questions (${meta.name})`;
+          ? 'Circuit Disarm — All 10 Circuit Maps & Teacher Answer Keys'
+          : 'Circuit Disarm — All 10 Student Circuit Maps & Questions';
         const html = buildStandaloneWorksheetHtml(
           container.innerHTML,
           docTitle,
@@ -590,8 +584,8 @@ export default function App() {
         const a = document.createElement('a');
         a.href = url;
         a.download = includeAnswerKeys
-          ? `circuit-disarm-all-10-maps-with-keys-${scenario}.html`
-          : `circuit-disarm-all-10-student-maps-${scenario}.html`;
+          ? 'circuit-disarm-all-10-maps-with-keys.html'
+          : 'circuit-disarm-all-10-student-maps.html';
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -667,24 +661,6 @@ export default function App() {
             >
               Mission Hub
             </button>
-
-            {/* Quick Scenario Switcher */}
-            <div className="flex items-center gap-1 p-0.5 rounded-lg bg-slate-200/80 dark:bg-slate-900 border border-slate-300/80 dark:border-slate-800">
-              {(['forensic', 'rov', 'outback'] as ScenarioId[]).map((sid) => (
-                <button
-                  key={sid}
-                  type="button"
-                  onClick={() => handleSelectScenario(sid)}
-                  className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors whitespace-nowrap ${
-                    scenario === sid
-                      ? 'bg-white dark:bg-slate-700 text-slate-950 dark:text-white shadow-sm'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  {SCENARIOS[sid].shortName}
-                </button>
-              ))}
-            </div>
 
             {activeLevel && !paperOnlyMode && (
               <button
@@ -801,7 +777,6 @@ export default function App() {
             completedLevelIds={completedLevelIds}
             completedLessonIds={completedLessonIds}
             bypassLessonGates={bypassLessonGates}
-            onSelectScenario={handleSelectScenario}
             onSelectConfidence={handleSelectConfidence}
             onLaunchLevel={(id) => handleLaunchLevel(id)}
             onOpenLesson={(lessonId) => setActiveLessonId(lessonId)}
@@ -1301,6 +1276,46 @@ export default function App() {
         />
       )}
 
+      {/* Dramatic Full-Screen Climax Overlay (Explosion, Meltdown, Arc Blast, Siren, Victory) */}
+      {activeLevel &&
+        !eventOverlayDismissed &&
+        !activeLessonId &&
+        !pinModalOpen &&
+        !bulkPrintModalOpen &&
+        (faultState.locked || isWon) &&
+        (() => {
+          const isVictoryMode = isWon && !faultState.locked;
+          const hasNext = activeLevel.id < LEVELS.length;
+          const nextId = activeLevel.id + 1;
+          const nextGate =
+            hasNext && !bypassLessonGates ? getRequiredLessonForLevel(nextId) : null;
+          const needsLesson =
+            nextGate !== null && !completedLessonIds.includes(nextGate.id);
+
+          const nextLabel = hasNext
+            ? needsLesson && nextGate
+              ? `Next: Mini-Lesson 0${nextGate.number} (${nextGate.shortTitle})`
+              : `Next Mission (Mission ${String(nextId).padStart(2, '0')})`
+            : 'All 10 Missions Cleared! Return to Hub';
+
+          return (
+            <DramaticEventOverlay
+              mode={isVictoryMode ? 'victory' : 'fault'}
+              faultState={faultState}
+              debriefNote={activeLevel.debriefNote}
+              nextActionLabel={nextLabel}
+              nextActionIsLesson={needsLesson}
+              onReset={handleResetCircuit}
+              onInspect={() => setEventOverlayDismissed(true)}
+              onNextMission={
+                hasNext
+                  ? () => handleLaunchLevel(nextId)
+                  : () => setActiveLevelId(null)
+              }
+            />
+          );
+        })()}
+
       {/* Teacher Mode Access Code Modal */}
       {pinModalOpen && (
         <TeacherPinModal
@@ -1332,7 +1347,6 @@ export default function App() {
       {/* Teacher Mode Bulk Print / Download All 10 Modal */}
       {bulkPrintModalOpen && teacherUnlocked && (
         <BulkPrintModal
-          scenario={scenario}
           onBulkPrint={handleBulkPrint}
           onBulkDownload={handleBulkDownload}
           onClose={() => setBulkPrintModalOpen(false)}

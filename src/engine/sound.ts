@@ -173,6 +173,121 @@ class TactileAudioEngine {
     });
   }
 
+  /** Dramatic explosion boom + sub-bass rumble (timeout detonation / core meltdown) */
+  public playExplosion(): void {
+    const ctx = this.getContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+
+    // Low-end sub boom sweep
+    const boomOsc = ctx.createOscillator();
+    const boomGain = ctx.createGain();
+    boomOsc.type = 'sine';
+    boomOsc.frequency.setValueAtTime(115, now);
+    boomOsc.frequency.exponentialRampToValueAtTime(24, now + 0.85);
+    boomGain.gain.setValueAtTime(0.36, now);
+    boomGain.gain.exponentialRampToValueAtTime(0.001, now + 0.92);
+    boomOsc.connect(boomGain);
+    boomGain.connect(ctx.destination);
+    boomOsc.start(now);
+    boomOsc.stop(now + 0.95);
+
+    // Filtered noise roar shockwave
+    const dur = 1.05;
+    const bufferSize = Math.floor(ctx.sampleRate * dur);
+    const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.32));
+    }
+    const noise = ctx.createBufferSource();
+    noise.buffer = noiseBuffer;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(950, now);
+    filter.frequency.exponentialRampToValueAtTime(140, now + dur);
+
+    const nGain = ctx.createGain();
+    nGain.gain.setValueAtTime(0.32, now);
+    nGain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+
+    noise.connect(filter);
+    filter.connect(nGain);
+    nGain.connect(ctx.destination);
+    noise.start(now);
+  }
+
+  /** High-voltage electric arc crackle & breaker snap (short circuit / fuse / overload) */
+  public playElectricZap(): void {
+    const ctx = this.getContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+
+    // Crisp arc crackle noise
+    const dur = 0.34;
+    const bufferSize = Math.floor(ctx.sampleRate * dur);
+    const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      const burst = i % 900 < 320 ? 1 : 0.2;
+      data[i] = (Math.random() * 2 - 1) * burst * Math.exp(-i / (bufferSize * 0.55));
+    }
+    const noise = ctx.createBufferSource();
+    noise.buffer = noiseBuffer;
+
+    const hp = ctx.createBiquadFilter();
+    hp.type = 'bandpass';
+    hp.frequency.setValueAtTime(2400, now);
+    hp.Q.value = 1.5;
+
+    const nGain = ctx.createGain();
+    nGain.gain.setValueAtTime(0.28, now);
+    nGain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+
+    noise.connect(hp);
+    hp.connect(nGain);
+    nGain.connect(ctx.destination);
+    noise.start(now);
+
+    // Sawtooth buzz drop
+    const osc = ctx.createOscillator();
+    const oscGain = ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(290, now);
+    osc.frequency.exponentialRampToValueAtTime(75, now + 0.36);
+    oscGain.gain.setValueAtTime(0.15, now);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
+    osc.connect(oscGain);
+    oscGain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.4);
+  }
+
+  /** Anti-tamper siren trap two-tone klaxon */
+  public playSirenAlarm(): void {
+    const ctx = this.getContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(620, now);
+    osc.frequency.linearRampToValueAtTime(920, now + 0.22);
+    osc.frequency.linearRampToValueAtTime(620, now + 0.44);
+    osc.frequency.linearRampToValueAtTime(920, now + 0.66);
+
+    gain.gain.setValueAtTime(0.14, now);
+    gain.gain.setValueAtTime(0.14, now + 0.65);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.82);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.85);
+  }
+
   /** Subtle countdown tick under 15 seconds */
   public playLowTimeTick(): void {
     const ctx = this.getContext();

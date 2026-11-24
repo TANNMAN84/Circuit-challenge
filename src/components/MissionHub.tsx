@@ -9,12 +9,9 @@ import {
 import {
   ArrowRight,
   Check,
-  Compass,
   Gauge,
   GraduationCap,
   Lock,
-  Radio,
-  ShieldAlert,
   Zap,
 } from 'lucide-react';
 import {
@@ -30,18 +27,11 @@ interface MissionHubProps {
   completedLevelIds: number[];
   completedLessonIds: LessonId[];
   bypassLessonGates: boolean;
-  onSelectScenario: (scenario: ScenarioId) => void;
   onSelectConfidence: (tier: ConfidenceTier) => void;
   onLaunchLevel: (levelId: number) => void;
   onOpenLesson: (lessonId: LessonId) => void;
   onClearProgress: () => void;
 }
-
-const SCENARIO_ICONS: Record<ScenarioId, React.ReactNode> = {
-  forensic: <ShieldAlert className="w-4 h-4" />,
-  rov: <Compass className="w-4 h-4" />,
-  outback: <Radio className="w-4 h-4" />,
-};
 
 export const MissionHub: React.FC<MissionHubProps> = ({
   levels,
@@ -50,7 +40,6 @@ export const MissionHub: React.FC<MissionHubProps> = ({
   completedLevelIds,
   completedLessonIds,
   bypassLessonGates,
-  onSelectScenario,
   onSelectConfidence,
   onLaunchLevel,
   onOpenLesson,
@@ -93,10 +82,10 @@ export const MissionHub: React.FC<MissionHubProps> = ({
               <span>{activeScenario.accentLabel}</span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">
-              Read the map. Beat the clock. Disarm the box.
+              Read the map. Beat the clock. Disarm the core.
             </h1>
             <p className="text-sm sm:text-base text-slate-700 dark:text-slate-300 leading-relaxed max-w-2xl">
-              Use your printed Circuit Map to flip the right switches (<span className="font-mono font-bold">S1–S8</span>), unlock sub-panels, and disarm all ten circuits before time runs out.
+              Use your printed Circuit Map to flip the right switches (<span className="font-mono font-bold">S1–S8</span>), dodge short-circuit blasts and heat meltdowns, and stop all ten live countdown devices.
             </p>
             <div className="pt-2 flex flex-wrap items-center gap-4">
               <button
@@ -167,73 +156,11 @@ export const MissionHub: React.FC<MissionHubProps> = ({
         </div>
       </section>
 
-      {/* Atmospheric Scenario Theme Cards with Live Backdrop Artwork */}
-      <section className="space-y-3">
-        <div className="flex flex-wrap items-baseline justify-between gap-2 px-1">
-          <h2 className="text-lg font-extrabold text-slate-900 dark:text-white drop-shadow-sm">
-            01. Pick Your World
-          </h2>
-          <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-            Changes the story, backdrop art &amp; mission labels
-          </span>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-4">
-          {(['forensic', 'rov', 'outback'] as ScenarioId[]).map((id) => {
-            const meta = SCENARIOS[id];
-            const selected = scenario === id;
-            return (
-              <button
-                key={id}
-                type="button"
-                onClick={() => onSelectScenario(id)}
-                className={`group relative text-left rounded-xl overflow-hidden border-2 transition-all h-44 flex flex-col justify-end p-4 shadow-md ${
-                  selected
-                    ? `${meta.accentRingClass} scale-[1.01] shadow-xl`
-                    : 'border-slate-300/80 dark:border-slate-700/80 hover:border-slate-400 dark:hover:border-slate-500'
-                }`}
-              >
-                {/* Fallback gradient + generated background art */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${meta.fallbackGradient}`} />
-                <img
-                  src={meta.backgroundImage}
-                  alt={meta.name}
-                  referrerPolicy="no-referrer"
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                  }}
-                />
-                {/* Measured legibility scrim */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/15" />
-
-                <div className="relative z-10 space-y-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="inline-flex items-center gap-1.5 text-sm font-extrabold text-white">
-                      {SCENARIO_ICONS[id]}
-                      {meta.name}
-                    </span>
-                    {selected && (
-                      <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-amber-300">
-                        Active
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs leading-snug text-slate-200 line-clamp-2">
-                    {meta.tagline}
-                  </p>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
       {/* Ten-Mission Operations Grid */}
       <section className="space-y-6">
         <div className="flex flex-wrap items-baseline justify-between gap-2 px-1">
           <h2 className="text-lg font-extrabold text-slate-900 dark:text-white drop-shadow-sm">
-            02. Pick a Mission (01–10)
+            Pick a Mission (01–10)
           </h2>
           <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
             Complete interactive Mini-Lessons to unlock new stages · Print Circuit Maps inside each level

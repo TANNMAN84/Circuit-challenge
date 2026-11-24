@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { LevelDefinition, ScenarioId } from '../types/circuit';
-import { SCENARIOS } from '../data/scenarios';
+import { LevelDefinition } from '../types/circuit';
 import { soundEngine } from '../engine/sound';
 import {
   Download,
@@ -120,21 +119,18 @@ export const TeacherPinModal: React.FC<TeacherPinModalProps> = ({
 };
 
 interface BulkPrintModalProps {
-  scenario: ScenarioId;
   onBulkPrint: (includeAnswerKeys: boolean, layout: 'grouped' | 'paired') => void;
   onBulkDownload: (includeAnswerKeys: boolean, layout: 'grouped' | 'paired') => void;
   onClose: () => void;
 }
 
 export const BulkPrintModal: React.FC<BulkPrintModalProps> = ({
-  scenario,
   onBulkPrint,
   onBulkDownload,
   onClose,
 }) => {
   const [includeKeys, setIncludeKeys] = useState(true);
   const [layout, setLayout] = useState<'grouped' | 'paired'>('grouped');
-  const scenarioMeta = SCENARIOS[scenario];
   const totalPages = includeKeys ? 20 : 10;
 
   return (
@@ -164,8 +160,7 @@ export const BulkPrintModal: React.FC<BulkPrintModalProps> = ({
 
         <div className="p-5 space-y-4">
           <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-            Generate a monochrome A4 classroom pack for all 10 missions using the{' '}
-            <strong className="text-slate-900 dark:text-white">{scenarioMeta.name}</strong> theme.
+            Generate a monochrome A4 classroom pack for all 10 missions.
           </p>
 
           <label className="flex items-start gap-2.5 p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 cursor-pointer">

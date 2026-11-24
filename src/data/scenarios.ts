@@ -1,7 +1,5 @@
 import { ConfidenceTier, ScenarioId } from '../types/circuit';
-import forensicBg from '../assets/images/bg_forensic_bench_1795417780790.jpg';
-import rovBg from '../assets/images/bg_deepsea_rov_1795417780221.jpg';
-import outbackBg from '../assets/images/bg_outback_station_1795417780956.jpg';
+import coreBenchBg from '../assets/images/bg_forensic_bench_1795417780790.jpg';
 
 export interface ScenarioMetadata {
   id: ScenarioId;
@@ -23,64 +21,32 @@ export interface ScenarioMetadata {
   bayTintDark: string;
 }
 
+export const DEFAULT_SCENARIO: ScenarioId = 'forensic';
+
+const UNIFIED_THEME: ScenarioMetadata = {
+  id: 'forensic',
+  name: 'Core Disarm',
+  shortName: 'Core Disarm',
+  tagline: 'Trace the circuit map, dodge traps, and disarm the countdown core before detonation.',
+  chassisCode: 'LIVE CORE UNIT',
+  successVerb: 'Disarmed',
+  successHeadline: 'DEVICE DISARMED!',
+  accentLabel: 'Live Countdown Device',
+  backgroundImage: coreBenchBg,
+  fallbackGradient: 'from-stone-900 via-zinc-900 to-amber-950',
+  stripeClass: 'hazard-stripe-bar',
+  chassisFrameBorder: '#f59e0b',
+  accentTextClass: 'text-amber-600 dark:text-amber-400',
+  accentBgClass: 'bg-amber-500 hover:bg-amber-600 text-slate-950',
+  accentRingClass: 'border-amber-500 dark:border-amber-400',
+  bayTintLight: '#eceae4',
+  bayTintDark: '#1b1d24',
+};
+
 export const SCENARIOS: Record<ScenarioId, ScenarioMetadata> = {
-  forensic: {
-    id: 'forensic',
-    name: 'Locked Evidence Case',
-    shortName: 'Evidence Case',
-    tagline: 'Open trapped evidence boxes on your workbench before the alarm goes off.',
-    chassisCode: 'EVIDENCE BOX',
-    successVerb: 'Disarmed',
-    successHeadline: 'BOX DISARMED!',
-    accentLabel: 'Workbench Mission',
-    backgroundImage: forensicBg,
-    fallbackGradient: 'from-stone-900 via-zinc-900 to-amber-950',
-    stripeClass: 'hazard-stripe-bar',
-    chassisFrameBorder: '#f59e0b',
-    accentTextClass: 'text-amber-600 dark:text-amber-400',
-    accentBgClass: 'bg-amber-500 hover:bg-amber-600 text-slate-950',
-    accentRingClass: 'border-amber-500 dark:border-amber-400',
-    bayTintLight: '#eceae4',
-    bayTintDark: '#1b1d24',
-  },
-  rov: {
-    id: 'rov',
-    name: 'Deep-Sea Sub Rescue',
-    shortName: 'Deep-Sea Sub',
-    tagline: 'Fix flooded control boxes inside a deep-sea rescue robot before power runs out.',
-    chassisCode: 'SUB CONTROL BOX',
-    successVerb: 'Fixed',
-    successHeadline: 'SUB SAFE & READY!',
-    accentLabel: 'Deep-Sea Mission',
-    backgroundImage: rovBg,
-    fallbackGradient: 'from-slate-950 via-cyan-950 to-teal-950',
-    stripeClass: 'rov-stripe-bar',
-    chassisFrameBorder: '#06b6d4',
-    accentTextClass: 'text-cyan-700 dark:text-cyan-400',
-    accentBgClass: 'bg-cyan-500 hover:bg-cyan-400 text-slate-950',
-    accentRingClass: 'border-cyan-500 dark:border-cyan-400',
-    bayTintLight: '#e3eff3',
-    bayTintDark: '#0f202c',
-  },
-  outback: {
-    id: 'outback',
-    name: 'Outback Solar Station',
-    shortName: 'Outback Station',
-    tagline: 'Beat an outback dust storm to switch off broken solar wires and keep the station safe.',
-    chassisCode: 'SOLAR CONTROL BOX',
-    successVerb: 'Fixed',
-    successHeadline: 'STATION SAFE!',
-    accentLabel: 'Outback Storm Mission',
-    backgroundImage: outbackBg,
-    fallbackGradient: 'from-stone-950 via-orange-950 to-amber-950',
-    stripeClass: 'outback-stripe-bar',
-    chassisFrameBorder: '#ea580c',
-    accentTextClass: 'text-orange-700 dark:text-orange-400',
-    accentBgClass: 'bg-orange-500 hover:bg-orange-400 text-slate-950',
-    accentRingClass: 'border-orange-500 dark:border-orange-400',
-    bayTintLight: '#f3eae3',
-    bayTintDark: '#221714',
-  },
+  forensic: UNIFIED_THEME,
+  rov: UNIFIED_THEME,
+  outback: UNIFIED_THEME,
 };
 
 export interface ConfidenceConfig {
